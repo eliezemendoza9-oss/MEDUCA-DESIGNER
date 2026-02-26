@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDUCA Curriculum Designer | English Program Planning System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-light: #f8fafc;
+            --text-dark: #1e293b;
+            --border: #e2e8f0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #fefdfb;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            overflow: hidden;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            padding: 35px 40px;
+            text-align: center;
+            box-shadow: 0 4px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .header h1 {
+            font-family: 'Merriweather', serif;
+            font-size: 2rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+        
+        .progress-container {
+            background: white;
+            padding: 20px 40px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--border);
+            z-index: 1;
+        }
+        
+        .progress-line-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #94a3b8;
+            transition: all 0.3s;
+            margin-bottom: 8px;
+        }
+        
+        .step.active .step-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .step.completed .step-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+            text-align: center;
+            max-width: 120px;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            background: var(--bg-light);
+        }
+        
+        .step-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        
+        .section-title {
+            font-family: 'Merriweather', serif;
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .section-subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group label::before {
+            content: '✦';
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 14px 18px 14px 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: linear-gradient(to right, #ffffff, #f8fafc);
+            position: relative;
+        }
+        
+        .form-group::before {
+            content: '📝';
+            position: absolute;
+            left: 18px;
+            top: 43px;
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .form-group:has(select)::before {
+            content: '📋';
+        }
+        
+        .form-group:has(input[type="number"])::before {
+            content: '🔢';
+        }
+        
+        .form-group:has(input[type="date"])::before {
+            content: '📅';
+        }
+        
+        .form-group:has(textarea)::before {
+            content: '✍️';
+            top: 50px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 8px 20px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+            background: white;
+        }
+        
+        .form-group input[readonly] {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            color: #475569;
+            cursor: not-allowed;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            padding-top: 16px;
+        }
+        
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .skill-card {
+            background: white;
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        
+        .skill-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .skill-card.selected {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+        
+        .skill-card.selected::before {
+            transform: scaleX(1);
+        }
+        
+        .skill-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        
+        .skill-name {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .skill-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+        
+        .standards-section {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .standards-section.visible {
+            display: block;
+        }
+        
+        .standards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+        }
+        
+        .standard-box {
+            background: #f8fafc;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .standard-box h4 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-transform: capitalize;
+        }
+        
+        .standard-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .standard-type {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .standard-text {
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .outcomes-list {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed var(--border);
+        }
+        
+        .outcomes-title {
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .outcome-item {
+            background: #fef3c7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--secondary);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        
+        .competence-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+        
+        .competence-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+        }
+        
+        .competence-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .competence-icon {
+            font-size: 2rem;
+            margin-right: 12px;
+        }
+        
+        .competence-title {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 1.05rem;
+        }
+        
+        .competence-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .competence-content {
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        
+        .competence-content strong {
+            color: var(--primary);
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 6px;
+        }
+        
+        .competence-content ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .competence-content li {
+            margin-bottom: 6px;
+            color: #475569;
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+        
+        .project-card {
+            background: white;
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .project-card::after {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--success);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s;
+        }
+        
+        .project-card.selected::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .project-card.selected {
+            border-color: var(--success);
+            background: #f0fdf4;
+        }
+        
+        .project-number {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .project-title {
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+        }
+        
+        .project-overview {
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        
+        .ai-assist-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+        
+        .ai-assist-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        .ai-assist-btn::before {
+            content: '✨';
+            font-size: 1.2rem;
+        }
+        
+        .manual-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 15px;
+            color: #64748b;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        
+        .manual-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .nav-buttons {
+            padding: 25px 40px;
+            background: white;
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .btn-back {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+        
+        .btn-back:hover {
+            background: #e2e8f0;
+            transform: translateX(-3px);
+        }
+        
+        .btn-next {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-next:hover {
+            background: var(--primary-dark);
+            transform: translateX(3px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-finish {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-finish:hover {
+            background: #059669;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .lessons-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+        
+        .lessons-table thead th {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .lessons-table thead th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+        
+        .lessons-table thead th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .lessons-table tbody tr {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .lessons-table tbody td {
+            padding: 16px;
+            border: none;
+        }
+        
+        .lessons-table tbody td:first-child {
+            border-radius: 10px 0 0 10px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .lessons-table tbody td:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .lessons-table input,
+        .lessons-table textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+        
+        .lessons-table textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        
+        .add-lesson-btn {
+            margin-top: 20px;
+            background: white;
+            border: 2px dashed var(--primary);
+            color: var(--primary);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .add-lesson-btn:hover {
+            background: #eff6ff;
+            border-color: var(--primary-dark);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1200px) {
+            .skills-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .competence-grid,
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🎓 MEDUCA Curriculum Designer</h1>
+            <p class="subtitle">Ministry of Education Panama | English Program Planning System | Professional Curriculum Development Tool</p>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="progress-line">
+                    <div class="progress-line-fill" id="progressFill"></div>
+                </div>
+                <div class="step active" onclick="goToStep(0)">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">General Info</div>
+                </div>
+                <div class="step" onclick="goToStep(1)">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Standards</div>
+                </div>
+                <div class="step" onclick="goToStep(2)">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Competences</div>
+                </div>
+                <div class="step" onclick="goToStep(3)">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Objectives</div>
+                </div>
+                <div class="step" onclick="goToStep(4)">
+                    <div class="step-circle">5</div>
+                    <div class="step-label">Assessment</div>
+                </div>
+                <div class="step" onclick="goToStep(5)">
+                    <div class="step-circle">6</div>
+                    <div class="step-label">Sequence</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-area" id="contentArea">
+            <!-- STEP 1: General Information -->
+            <div class="step-content active" id="step0">
+                <div class="content-card">
+                    <h2 class="section-title">📋 General Information</h2>
+                    <p class="section-subtitle">Basic details about your theme planner</p>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Regional Education Directorate:</label>
+                            <input type="text" id="regional" placeholder="e.g., San Miguelito">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>School Name:</label>
+                            <input type="text" id="school" placeholder="e.g., C.E.B.G República de Francia">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Teacher(s):</label>
+                            <input type="text" id="teacher" placeholder="Enter teacher name(s)">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Grade:</label>
+                            <select id="grade" onchange="loadGradeData()">
+                                <option value="">Select Grade</option>
+                                <option value="prek">Pre-K (Pre A1.1 - Foundational Learner)</option>
+                                <option value="kinder">K (Pre A1.2 - Foundational Learner)</option>
+                                <option value="1st">1 (Pre A1.3 - Foundational Learner)</option>
+                                <option value="2nd">2 (Pre A1.4 - Foundational Learner)</option>
+                                <option value="3rd">3 (A1.1 - Beginner)</option>
+                                <option value="4th">4 (A1.2 - Beginner)</option>
+                                <option value="5th">5 (A1.3 - Beginner)</option>
+                                <option value="6th">6 (A2 - High Beginner)</option>
+                                <option value="7th">7 (A2+ - High Beginner)</option>
+                                <option value="8th">8 (A2+ - High Beginner)</option>
+                                <option value="9th">9 (A2+ - High Beginner)</option>
+                                <option value="10th">10 (B1.1 - Pre-Intermediate)</option>
+                                <option value="11th">11 (B1.2 - Pre-Intermediate)</option>
+                                <option value="12th">12 (B1.3 - Pre-Intermediate)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>CEFR Level:</label>
+                            <input type="text" id="cefrLevel" value="" readonly style="background-color: #f8fafc;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Trimester:</label>
+                            <select id="trimester">
+                                <option value="">Select Trimester</option>
+                                <option value="1">Trimester 1</option>
+                                <option value="2">Trimester 2</option>
+                                <option value="3">Trimester 3</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Weekly Hour(s):</label>
+                            <input type="number" id="weeklyHours" placeholder="Enter weekly hours" min="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Start Date:</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>End Date:</label>
+                            <input type="date" id="endDate">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Scenario:</label>
+                            <select id="scenario" onchange="loadScenarioData()">
+                                <option value="">Select a Scenario</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Theme:</label>
+                            <select id="theme" onchange="onThemeChange()">
+                                <option value="">Select a Theme</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STEP 2: Standards and Learning Outcomes -->
+            <div class="step-content" id="step1">
+                <div class="content-card">
+                    <h2 class="section-title">📚 Specific Standards and Learning Outcomes</h2>
+                    <p class="section-subtitle">Select one or more skills to view their standards and learning outcomes</p>
+                    
+                    <div class="skills-container" id="skillsContainer">
+                        <!-- Skills will be loaded here -->
+                    </div>
+                    
+                    <div class="standards-section" id="standardsSection">
+                        <div class="standards-grid" id="standardsGrid">
+                            <!-- Standards will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STEP 3: Communicative Competences -->
+            <div class="step-content" id="step2">
+                <div class="content-card">
+                    <h2 class="section-title">💬 Communicative Competences</h2>
+                    <p class="section-subtitle">Language competences for the selected scenario</p>
+                    
+                    <div class="competence-grid" id="competencesGrid">
+                        <!-- Competences will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STEP 4: Specific Objectives -->
+            <div class="step-content" id="step3">
+                <div class="content-card">
+                    <h2 class="section-title">🎯 Specific Objectives</h2>
+                    <p class="section-subtitle" style="color: #ef4444;">These objectives must be SMART (Specific, Measurable, Achievable, Relevant, and Time-bound)</p>
+                    
+                    <button class="ai-assist-btn" onclick="generateObjectives()">
+                        Generate with AI
+                    </button>
+                    <label class="manual-toggle">
+                        <input type="checkbox" id="manualObjectives" onchange="toggleManualObjectives()">
+                        Write manually instead
+                    </label>
+                    
+                    <div class="form-grid" id="objectivesForm">
+                        <div class="form-group">
+                            <label>Listening Objective:</label>
+                            <textarea id="obj-listening" placeholder="Click 'Generate with AI' or check 'Write manually'..." readonly></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Reading Objective:</label>
+                            <textarea id="obj-reading" placeholder="Click 'Generate with AI' or check 'Write manually'..." readonly></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Speaking Objective:</label>
+                            <textarea id="obj-speaking" placeholder="Click 'Generate with AI' or check 'Write manually'..." readonly></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Writing Objective:</label>
+                            <textarea id="obj-writing" placeholder="Click 'Generate with AI' or check 'Write manually'..." readonly></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Mediation Objective:</label>
+                            <textarea id="obj-mediation" placeholder="Click 'Generate with AI' or check 'Write manually'..." readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STEP 5: Assessment & Instructional Strategies -->
+            <div class="step-content" id="step4">
+                <div class="content-card">
+                    <h2 class="section-title">✅ Assessment & Instructional Strategies</h2>
+                    <p class="section-subtitle">Materials, differentiation, and 21st-century projects</p>
+                    
+                    <button class="ai-assist-btn" onclick="generateAssessment()">
+                        Generate with AI
+                    </button>
+                    <label class="manual-toggle">
+                        <input type="checkbox" id="manualAssessment" onchange="toggleManualAssessment()">
+                        Write manually instead
+                    </label>
+                    
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label>Materials:</label>
+                        <textarea id="materials" placeholder="Click 'Generate with AI' or check 'Write manually'..." readonly></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 35px;">
+                        <label>Differentiated Instruction and Accommodations (DLN):</label>
+                        <textarea id="differentiation" placeholder="Click 'Generate with AI' or check 'Write manually'..." readonly></textarea>
+                    </div>
+                    
+                    <h3 style="margin-bottom: 20px; color: var(--text-dark);">🚀 21st-Century Projects</h3>
+                    <div class="projects-grid" id="projectsGrid">
+                        <!-- Projects will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STEP 6: Learning Sequence -->
+            <div class="step-content" id="step5">
+                <div class="content-card">
+                    <h2 class="section-title">📝 Learning Sequence</h2>
+                    <p class="section-subtitle" style="color: #ef4444;">This section should link back to the SMART objectives as checkpoints</p>
+                    
+                    <button class="ai-assist-btn" onclick="generateSequence()">
+                        Generate with AI
+                    </button>
+                    <label class="manual-toggle">
+                        <input type="checkbox" id="manualSequence" onchange="toggleManualSequence()">
+                        Write manually instead
+                    </label>
+                    
+                    <table class="lessons-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 120px;">Lesson</th>
+                                <th>Learning Sequence Activities</th>
+                                <th style="width: 180px;">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lessonsTableBody">
+                            <!-- Lessons will be added here -->
+                        </tbody>
+                    </table>
+                    
+                    <button class="add-lesson-btn" onclick="addLesson()">
+                        ➕ Add Another Lesson
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button class="btn btn-back" id="backBtn" onclick="previousStep()" style="visibility: hidden;">
+                ← Back
+            </button>
+            <button class="btn btn-next" id="nextBtn" onclick="nextStep()">
+                Next →
+            </button>
+        </div>
+    </div>
+    
+    <!-- Las bases de datos se cargarán dinámicamente según el grado seleccionado -->
+    <script>
+        let currentStep = 0;
+        let selectedSkills = [];
+        let currentScenario = null;
+        let selectedProjects = [];
+        
+        // LOGO MEDUCA URL
+        const LOGO_URL = "https://i.ibb.co/G4LgTgDT/LOGO-OFICUAL-MEDUCA.png";
+        
+        // Grade information mapping - Based on MEDUCA Panama Official Proficiency Bands
+        const GRADE_INFO = {
+            'prek': { name: 'Pre-Kinder', cefr: 'Pre A1.1', band: 'Foundational Learner', database: 'prek_database.js' },
+            'kinder': { name: 'Kindergarten', cefr: 'Pre A1.2', band: 'Foundational Learner', database: 'kindergarten_database.js' },
+            '1st': { name: '1st Grade', cefr: 'Pre A1.3', band: 'Foundational Learner', database: '1st_grade_database.js' },
+            '2nd': { name: '2nd Grade', cefr: 'Pre A1.4', band: 'Foundational Learner', database: '2nd_grade_database.js' },
+            '3rd': { name: '3rd Grade', cefr: 'A1.1', band: 'Beginner', database: '3rd_grade_database.js' },
+            '4th': { name: '4th Grade', cefr: 'A1.2', band: 'Beginner', database: '4th_grade_database.js' },
+            '5th': { name: '5th Grade', cefr: 'A1.3', band: 'Beginner', database: '5th_grade_database.js' },
+            '6th': { name: '6th Grade', cefr: 'A2', band: 'High Beginner', database: '6th_grade_database.js' },
+            '7th': { name: '7th Grade', cefr: 'A2+', band: 'High Beginner', database: '7th_grade_database.js' },
+            '8th': { name: '8th Grade', cefr: 'A2+', band: 'High Beginner', database: '8th_grade_database.js' },
+            '9th': { name: '9th Grade', cefr: 'A2+', band: 'High Beginner', database: '9th_grade_database.js' },
+            '10th': { name: '10th Grade', cefr: 'B1.1', band: 'Pre-Intermediate', database: '10th_grade_database.js' },
+            '11th': { name: '11th Grade', cefr: 'B1.2', band: 'Pre-Intermediate', database: '11th_grade_database.js' },
+            '12th': { name: '12th Grade', cefr: 'B1.3', band: 'Pre-Intermediate', database: '12th_grade_database.js' }
+        };
+        
+        function loadGradeData() {
+            const gradeSelect = document.getElementById('grade');
+            const cefrInput = document.getElementById('cefrLevel');
+            const scenarioSelect = document.getElementById('scenario');
+            const themeSelect = document.getElementById('theme');
+            
+            const selectedGrade = gradeSelect.value;
+            
+            if (!selectedGrade) {
+                cefrInput.value = '';
+                scenarioSelect.innerHTML = '<option value="">Select a Scenario</option>';
+                themeSelect.innerHTML = '<option value="">Select a Theme</option>';
+                return;
+            }
+            
+            const gradeInfo = GRADE_INFO[selectedGrade];
+            cefrInput.value = `${gradeInfo.cefr} - ${gradeInfo.band}`;
+            
+            // Clear current data
+            currentScenario = null;
+            selectedSkills = [];
+            selectedProjects = [];
+            scenarioSelect.innerHTML = '<option value="">Loading scenarios...</option>';
+            scenarioSelect.disabled = true;
+            themeSelect.innerHTML = '<option value="">Select a Theme</option>';
+            
+            // Remove any existing curriculum data script
+            const existingScript = document.getElementById('curriculum-script');
+            if (existingScript) {
+                existingScript.remove();
+            }
+            
+            // Clear CURRICULUM_DATA
+            if (typeof CURRICULUM_DATA !== 'undefined') {
+                delete window.CURRICULUM_DATA;
+            }
+            
+            // Load the appropriate database dynamically
+            const script = document.createElement('script');
+            script.id = 'curriculum-script';
+            script.src = gradeInfo.database;
+            script.onload = function() {
+                // Database loaded successfully
+                if (typeof CURRICULUM_DATA !== 'undefined') {
+                    scenarioSelect.disabled = false;
+                    loadScenarios();
+                } else {
+                    scenarioSelect.innerHTML = '<option value="">Error loading database</option>';
+                    scenarioSelect.disabled = true;
+                }
+            };
+            script.onerror = function() {
+                // Database file doesn't exist yet
+                scenarioSelect.innerHTML = '<option value="">Database not available for this grade yet</option>';
+                scenarioSelect.disabled = true;
+            };
+            document.body.appendChild(script);
+        }
+        
+        window.onload = function() {
+            // No cargar scenarios automáticamente - esperar a que el usuario seleccione un grado
+            addInitialLessons();
+        };
+        
+        function loadScenarios() {
+            const select = document.getElementById('scenario');
+            CURRICULUM_DATA.scenarios.forEach(scenario => {
+                const option = document.createElement('option');
+                option.value = scenario.scenario_number;
+                option.textContent = `Scenario ${scenario.scenario_number}: ${scenario.scenario}`;
+                select.appendChild(option);
+            });
+        }
+        
+        function loadScenarioData() {
+            const scenarioNum = parseInt(document.getElementById('scenario').value);
+            if (!scenarioNum) return;
+            
+            currentScenario = CURRICULUM_DATA.scenarios.find(s => s.scenario_number === scenarioNum);
+            
+            const themeSelect = document.getElementById('theme');
+            themeSelect.innerHTML = '<option value="">Select a Theme</option>';
+            currentScenario.themes.forEach(theme => {
+                const option = document.createElement('option');
+                option.value = theme.theme_number;
+                option.textContent = `Theme ${theme.theme_number}: ${theme.theme}`;
+                themeSelect.appendChild(option);
+            });
+            
+            loadSkills();
+            selectedProjects = [];
+        }
+        
+        function onThemeChange() {
+            // Cuando cambia el theme, solo necesitamos actualizar el display
+            // Los datos ya están en currentScenario
+            const themeNum = document.getElementById('theme').value;
+            if (themeNum) {
+                console.log(`Theme ${themeNum} selected`);
+                // Los datos ya están cargados en currentScenario
+                // No necesitamos recargar nada, solo el PDF usará el theme seleccionado
+            }
+        }
+        
+        function loadSkills() {
+            const container = document.getElementById('skillsContainer');
+            const skills = [
+                { key: 'listening', icon: '👂', name: 'Listening' },
+                { key: 'reading', icon: '📖', name: 'Reading' },
+                { key: 'speaking', icon: '🗣️', name: 'Speaking' },
+                { key: 'writing', icon: '✍️', name: 'Writing' },
+                { key: 'mediation', icon: '🤝', name: 'Mediation' }
+            ];
+            
+            container.innerHTML = '';
+            skills.forEach(skill => {
+                const data = currentScenario.standards_and_outcomes[skill.key];
+                const card = document.createElement('div');
+                card.className = 'skill-card';
+                card.dataset.skill = skill.key;
+                card.onclick = () => toggleSkill(skill.key);
+                card.innerHTML = `
+                    <div class="skill-icon">${skill.icon}</div>
+                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-desc">${data.general_standard.substring(0, 60)}...</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        function toggleSkill(skillKey) {
+            const card = document.querySelector(`[data-skill="${skillKey}"]`);
+            
+            if (selectedSkills.includes(skillKey)) {
+                selectedSkills = selectedSkills.filter(s => s !== skillKey);
+                card.classList.remove('selected');
+            } else {
+                selectedSkills.push(skillKey);
+                card.classList.add('selected');
+            }
+            
+            updateStandardsDisplay();
+        }
+        
+        function updateStandardsDisplay() {
+            const section = document.getElementById('standardsSection');
+            const grid = document.getElementById('standardsGrid');
+            
+            if (selectedSkills.length === 0) {
+                section.classList.remove('visible');
+                return;
+            }
+            
+            section.classList.add('visible');
+            grid.innerHTML = '';
+            
+            selectedSkills.forEach(skillKey => {
+                const data = currentScenario.standards_and_outcomes[skillKey];
+                const box = document.createElement('div');
+                box.className = 'standard-box';
+                
+                let html = `<h4>${skillKey.charAt(0).toUpperCase() + skillKey.slice(1)}</h4>`;
+                
+                // Standards - Todos se muestran
+                data.specific_standards.forEach(standard => {
+                    html += `
+                        <div class="standard-item">
+                            <div class="standard-type">${standard.type}</div>
+                            <div class="standard-text">${standard.standard}</div>
+                        </div>
+                    `;
+                });
+                
+                // Learning Outcomes - CON CHECKBOXES (máximo 2)
+                html += `
+                    <div class="outcomes-list">
+                        <div class="outcomes-title">📌 Learning Outcomes (Select up to 2):</div>
+                `;
+                
+                data.learning_outcomes.forEach((outcome, idx) => {
+                    const checkboxId = `outcome-${skillKey}-${idx}`;
+                    html += `
+                        <div class="outcome-item" style="display: flex; align-items: start; gap: 10px; cursor: pointer;" onclick="toggleOutcome('${skillKey}', ${idx})">
+                            <input type="checkbox" 
+                                   id="${checkboxId}" 
+                                   class="outcome-checkbox" 
+                                   data-skill="${skillKey}"
+                                   style="width: 18px; height: 18px; min-width: 18px; margin-top: 2px; cursor: pointer;"
+                                   onclick="event.stopPropagation();">
+                            <label for="${checkboxId}" style="cursor: pointer; flex: 1;">${outcome}</label>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                box.innerHTML = html;
+                grid.appendChild(box);
+            });
+            
+            // Agregar event listeners para los checkboxes
+            document.querySelectorAll('.outcome-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    handleOutcomeSelection(this);
+                });
+            });
+        }
+        
+        function toggleOutcome(skillKey, idx) {
+            const checkbox = document.getElementById(`outcome-${skillKey}-${idx}`);
+            checkbox.checked = !checkbox.checked;
+            handleOutcomeSelection(checkbox);
+        }
+        
+        function handleOutcomeSelection(checkbox) {
+            const skill = checkbox.dataset.skill;
+            const checkboxesForSkill = document.querySelectorAll(`.outcome-checkbox[data-skill="${skill}"]`);
+            const checkedCount = Array.from(checkboxesForSkill).filter(cb => cb.checked).length;
+            
+            // Si ya hay 2 seleccionados, deshabilitar los demás
+            if (checkedCount >= 2) {
+                checkboxesForSkill.forEach(cb => {
+                    if (!cb.checked) {
+                        cb.disabled = true;
+                        cb.parentElement.style.opacity = '0.5';
+                    }
+                });
+            } else {
+                // Re-habilitar todos
+                checkboxesForSkill.forEach(cb => {
+                    cb.disabled = false;
+                    cb.parentElement.style.opacity = '1';
+                });
+            }
+        }
+        
+        function loadCompetences() {
+            if (!currentScenario) return;
+            
+            const grid = document.getElementById('competencesGrid');
+            const comp = currentScenario.communicative_competences;
+            
+            grid.innerHTML = `
+                <div class="competence-card">
+                    <div class="competence-header">
+                        <div class="competence-icon">📚</div>
+                        <div>
+                            <div class="competence-title">Linguistic Competence</div>
+                            <div class="competence-subtitle">Learn to Know</div>
+                        </div>
+                    </div>
+                    <div class="competence-content">
+                        <strong>• Grammatical Features:</strong>
+                        <p>${comp.linguistic.grammatical_features.join(', ')}</p>
+                        <strong>• Vocabulary:</strong>
+                        <p style="white-space: pre-line;">${comp.linguistic.vocabulary}</p>
+                        <strong>• Pronunciation & Phonemic Awareness:</strong>
+                        <p style="white-space: pre-line;">${comp.linguistic.pronunciation_phonemic}</p>
+                    </div>
+                </div>
+                
+                <div class="competence-card">
+                    <div class="competence-header">
+                        <div class="competence-icon">🎯</div>
+                        <div>
+                            <div class="competence-title">Pragmatic Competence</div>
+                            <div class="competence-subtitle">Learn to Do</div>
+                        </div>
+                    </div>
+                    <div class="competence-content">
+                        ${comp.pragmatic.skills.map(s => `<p>• ${s}</p>`).join('')}
+                    </div>
+                </div>
+                
+                <div class="competence-card">
+                    <div class="competence-header">
+                        <div class="competence-icon">🌟</div>
+                        <div>
+                            <div class="competence-title">Sociolinguistic Competence</div>
+                            <div class="competence-subtitle">Learn to Be</div>
+                        </div>
+                    </div>
+                    <div class="competence-content">
+                        ${comp.sociolinguistic.skills.map(s => `<p>• ${s}</p>`).join('')}
+                        <strong>• 21st-Century Skills Project:</strong>
+                        ${currentScenario.assessment_ideas['21st_century_projects'].map(p => 
+                            `<p>${p.project_number}. ${p.project_title}</p>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadProjects() {
+            if (!currentScenario) return;
+            
+            const grid = document.getElementById('projectsGrid');
+            const projects = currentScenario.assessment_ideas['21st_century_projects'];
+            
+            grid.innerHTML = '';
+            projects.forEach(project => {
+                const card = document.createElement('div');
+                card.className = 'project-card';
+                card.dataset.projectNum = project.project_number;
+                card.onclick = () => toggleProject(project.project_number, card);
+                card.innerHTML = `
+                    <div class="project-number">Project ${project.project_number}</div>
+                    <div class="project-title">${project.project_title}</div>
+                    <div class="project-overview">${project.overview}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        function toggleProject(projectNum, card) {
+            if (selectedProjects.includes(projectNum)) {
+                selectedProjects = selectedProjects.filter(p => p !== projectNum);
+                card.classList.remove('selected');
+            } else {
+                selectedProjects.push(projectNum);
+                card.classList.add('selected');
+            }
+        }
+        
+        function toggleManualObjectives() {
+            const manual = document.getElementById('manualObjectives').checked;
+            const textareas = ['obj-listening', 'obj-reading', 'obj-speaking', 'obj-writing', 'obj-mediation'];
+            
+            textareas.forEach(id => {
+                const elem = document.getElementById(id);
+                elem.readOnly = !manual;
+                if (manual) {
+                    elem.placeholder = 'Enter your SMART objective...';
+                } else {
+                    elem.placeholder = "Click 'Generate with AI' or check 'Write manually'...";
+                }
+            });
+        }
+        
+        function toggleManualAssessment() {
+            const manual = document.getElementById('manualAssessment').checked;
+            const fields = ['materials', 'differentiation'];
+            
+            fields.forEach(id => {
+                const elem = document.getElementById(id);
+                elem.readOnly = !manual;
+                if (manual) {
+                    elem.placeholder = 'Enter your content...';
+                } else {
+                    elem.placeholder = "Click 'Generate with AI' or check 'Write manually'...";
+                }
+            });
+        }
+        
+        function toggleManualSequence() {
+            const manual = document.getElementById('manualSequence').checked;
+            const textareas = document.querySelectorAll('#lessonsTableBody textarea');
+            
+            textareas.forEach(elem => {
+                elem.readOnly = !manual;
+                if (manual) {
+                    elem.placeholder = 'Describe learning activities...';
+                } else {
+                    elem.placeholder = "Click 'Generate with AI' or check 'Write manually'...";
+                }
+            });
+        }
+        
+        // AI GENERATION con respuestas variadas
+        const objectivesVariations = [
+            {
+                listening: `By the end of this ${getWeeks()}-week unit, students will recognize and respond to basic greetings and polite expressions with at least 80% accuracy in classroom interactions.`,
+                reading: `Students will identify and name at least 3 main characters from picture books about friendship, demonstrating comprehension through pointing and verbal responses.`,
+                speaking: `Students will successfully introduce themselves using "My name is [name]" in 9 out of 10 opportunities during structured practice activities by the end of the unit.`,
+                writing: `Students will create at least 2 drawings representing friendship scenarios, including simple symbols or scribbles to show greeting exchanges.`,
+                mediation: `Students will demonstrate understanding of polite expressions by mimicking appropriate gestures and body language from picture books in 4 out of 5 attempts.`
+            },
+            {
+                listening: `Within ${getWeeks()} weeks, students will demonstrate understanding of basic English greetings by responding appropriately (verbally or through gestures) in 8 out of 10 classroom scenarios.`,
+                reading: `By unit's end, students will point to and name characters saying "please" or "thank you" in familiar stories with 75% accuracy when prompted by teacher.`,
+                speaking: `Students will greet peers and teachers using simple English phrases ("hello," "goodbye") with appropriate gestures in at least 5 daily interactions by week ${getWeeks()}.`,
+                writing: `Within the unit timeframe, students will produce drawings showing friendship interactions, incorporating at least one greeting or polite expression symbol in each drawing.`,
+                mediation: `Students will role-play greeting scenarios from picture books, using appropriate body language and basic English words, completing 3 successful exchanges per session.`
+            },
+            {
+                listening: `Students will identify their names when called in English and recognize polite words ("please," "thank you") with 90% accuracy by the conclusion of this ${getWeeks()}-week period.`,
+                reading: `By the final week, students will select correct character pictures when hearing names from friendship stories, achieving 80% accuracy across 5 different story sessions.`,
+                speaking: `Each student will participate in basic greeting exchanges ("hello," "hi," "goodbye") with classmates, completing at least 6 successful interactions daily by unit end.`,
+                writing: `Students will draw and share pictures of themselves with friends, incorporating greeting gestures or polite expressions, completing 3 drawings throughout the unit.`,
+                mediation: `By week ${getWeeks()}, students will demonstrate polite expressions through actions and simple words in peer interactions, achieving success in 8 out of 10 opportunities.`
+            }
+        ];
+        
+        const assessmentVariations = [
+            {
+                materials: `Picture books featuring friendship themes (min. 5 titles), greeting flash cards with visual cues, name tags with space for decoration, art materials (crayons, markers, construction paper), audio recordings of English greetings, hand puppets for role-play, digital storybook app (if technology available), greeting posters for classroom display.`,
+                differentiation: `Visual learners: Extra picture supports and visual schedules. Kinesthetic learners: Movement-based greeting activities and role-play stations. Students needing extra support: Simplified response options, extended wait time, bilingual picture cards. Advanced learners: Additional vocabulary and complex sentence frames. ELL support: Home language connections, visual dictionaries, peer buddies.`
+            },
+            {
+                materials: `Diverse picture books about meeting friends and politeness, laminated greeting cards for durability, personalized name tag materials, variety of art supplies including stickers, recorded greeting songs in English, felt board with character pieces for storytelling, tablet with interactive greeting games, word wall with greeting vocabulary.`,
+                differentiation: `For students with limited attention: Shortened activities with frequent breaks. For shy students: Small group practice before whole class participation. For students with motor challenges: Adaptive grip tools, pre-cut shapes. For quick learners: Leadership roles in activities, creating their own greeting cards. Universal supports: Visual timers, step-by-step instruction cards, multilingual resources.`
+            },
+            {
+                materials: `Collection of friendship-themed picture books from diverse cultures, large greeting word cards with pictures, materials for name tag creation (cardstock, decorative supplies), drawing materials (various paper sizes, drawing tools), audio player with greeting phrases, dress-up items for role-play, interactive whiteboard for digital storytelling, classroom greeting chart for tracking progress.`,
+                differentiation: `Tier 1: All students receive visual supports and modeling. Tier 2: Small group reteaching with simplified language and extra practice opportunities. Tier 3: One-on-one support with gesture-only responses accepted initially. Enrichment: Students create greeting books for younger classes. Accommodations: Speech-to-text apps, communication boards, flexible seating for engagement.`
+            }
+        ];
+        
+        const sequenceVariations = [
+            [
+                `Warm-up: "Hello Song" with gestures. Introduction: Teacher models greetings using puppets. Practice: Students greet partners using picture cards as prompts. Wrap-up: Circle time - each student waves and says "goodbye."`,
+                `Review: Previous day's greetings with actions. New learning: Introduce "please" and "thank you" through story. Guided practice: Role-play sharing toys with polite words. Independent work: Draw a picture showing saying "thank you."`,
+                `Opening: Greeting game - students find partner and greet. Main activity: Create personalized name tags with teacher support. Practice: Walk around room introducing themselves ("My name is..."). Closing: Share name tags in circle.`,
+                `Energizer: Movement song about friends. Reading: Picture book about making new friends. Discussion: Simple questions about characters and friendship. Activity: Draw favorite part of story, practice describing with "This is..."`,
+                `Review week: Stations rotating through greeting activities, polite expression practice, name introduction games, and friendship drawings. Assessment: Teacher observes and documents student performance at each station.`
+            ],
+            [
+                `Start: Teacher greets each student individually at door. Circle time: Practice responding to greetings with gestures and words. Story: Read book about first day of school. Extension: Act out story with student volunteers.`,
+                `Begin: Review greetings with call-and-response. Teach: "Please" and "thank you" through demonstration. Practice: Snack time - students request items politely. Reinforce: Create "Thank You" card for classroom helper.`,
+                `Hook: Mystery bag with names - pull and greet that person. Lesson: Practice "My name is..." with mirror. Activity: Decorate individual name cards with favorite colors. Share: Present name cards to classmates.`,
+                `Warm-up: "Making Friends" song and dance. Read-aloud: Story about sharing and kindness. Discussion: Talk about being a good friend. Create: Draw picture of playing with a friend, label with helper.`,
+                `Culmination: Friendship celebration with greeting stations. Stations include: greeting card making, role-play corner, name game, story retelling. Conclude: Class performance of "Hello and Goodbye Song" for visitors.`
+            ],
+            [
+                `Entry routine: Students greet teacher at classroom door. Opening: "Good Morning" song circle. Mini-lesson: Different ways to say hello (wave, handshake, smile). Practice: Partner greetings with choice of gesture. Exit ticket: Wave goodbye.`,
+                `Launch: Puppet show demonstrating polite words. Instruction: When and why we say "please" and "thank you." Application: Pretend restaurant - ordering snacks politely. Reflection: Draw favorite polite expression.`,
+                `Introduction: Play "Name Game" song. Teaching: Breaking down "My name is [name]" phrase. Modeling: Teacher demonstrates with stuffed animals. Practice: Students introduce classroom toys. Extension: Design name flags.`,
+                `Engage: Photo slideshow of friends helping each other. Read: Interactive book about friendship actions. Process: Act out ways to be a good friend. Create: Friendship bracelet or drawing for partner.`,
+                `Showcase: Students demonstrate learning through friendship festival. Activities: Greeting guests, sharing projects, performing songs. Assessment: Photo documentation and student self-reflection using emoji faces.`
+            ]
+        ];
+        
+        function getWeeks() {
+            return document.getElementById('weeks').value || '4';
+        }
+        
+        function getRandomVariation(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+        
+        async function generateObjectives() {
+            if (!currentScenario) {
+                alert('Please select a scenario first');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+            btn.disabled = true;
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const suggestion = getRandomSuggestion(currentScenario.scenario_number);
+            
+            if (suggestion && suggestion.objectives) {
+                document.getElementById('obj-listening').value = suggestion.objectives.listening;
+                document.getElementById('obj-reading').value = suggestion.objectives.reading;
+                document.getElementById('obj-speaking').value = suggestion.objectives.speaking;
+                document.getElementById('obj-writing').value = suggestion.objectives.writing;
+                document.getElementById('obj-mediation').value = suggestion.objectives.mediation;
+            } else {
+                alert('No suggestions available for Scenario ' + currentScenario.scenario_number + ' yet. Only Scenarios 1-2 have full suggestions.');
+            }
+            
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+        
+        async function generateAssessment() {
+            if (!currentScenario) {
+                alert('Please select a scenario first');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+            btn.disabled = true;
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const suggestion = getRandomSuggestion(currentScenario.scenario_number);
+            
+            if (suggestion && suggestion.assessment) {
+                document.getElementById('materials').value = suggestion.assessment.materials;
+                document.getElementById('differentiation').value = suggestion.assessment.differentiation;
+            } else {
+                alert('No suggestions available for Scenario ' + currentScenario.scenario_number + ' yet.');
+            }
+            
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+        
+        async function generateSequence() {
+            if (!currentScenario) {
+                alert('Please select a scenario first');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+            btn.disabled = true;
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const suggestion = getRandomSuggestion(currentScenario.scenario_number);
+            
+            if (suggestion && suggestion.sequence) {
+                const textareas = document.querySelectorAll('#lessonsTableBody textarea');
+                textareas.forEach((textarea, idx) => {
+                    if (idx < suggestion.sequence.length) {
+                        textarea.value = suggestion.sequence[idx];
+                    }
+                });
+            } else {
+                alert('No suggestions available for Scenario ' + currentScenario.scenario_number + ' yet.');
+            }
+            
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+        
+        function addInitialLessons() {
+            for (let i = 1; i <= 5; i++) {
+                addLesson();
+            }
+        }
+        
+        function addLesson() {
+            const tbody = document.getElementById('lessonsTableBody');
+            const lessonNum = tbody.rows.length + 1;
+            const row = tbody.insertRow();
+            const isManual = document.getElementById('manualSequence')?.checked;
+            row.innerHTML = `
+                <td>Lesson ${lessonNum}</td>
+                <td><textarea placeholder="${isManual ? 'Describe learning activities...' : "Click 'Generate with AI' or check 'Write manually'..."}" ${!isManual ? 'readonly' : ''}></textarea></td>
+                <td><input type="date"></td>
+            `;
+        }
+        
+        function nextStep() {
+            if (currentStep < 5) {
+                if (currentStep === 1 && selectedSkills.length === 0) {
+                    alert('Please select at least one skill');
+                    return;
+                }
+                if (currentStep === 2) loadCompetences();
+                if (currentStep === 4) loadProjects();
+                
+                currentStep++;
+                updateStepDisplay();
+            } else {
+                generatePDF();
+            }
+        }
+        
+        function previousStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStepDisplay();
+            }
+        }
+        
+        function goToStep(step) {
+            currentStep = step;
+            updateStepDisplay();
+        }
+        
+        function updateStepDisplay() {
+            document.querySelectorAll('.step-content').forEach((content, idx) => {
+                content.classList.toggle('active', idx === currentStep);
+            });
+            
+            document.querySelectorAll('.step').forEach((step, idx) => {
+                step.classList.remove('active', 'completed');
+                if (idx === currentStep) {
+                    step.classList.add('active');
+                } else if (idx < currentStep) {
+                    step.classList.add('completed');
+                }
+            });
+            
+            const progress = (currentStep / 5) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            const backBtn = document.getElementById('backBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            backBtn.style.visibility = currentStep > 0 ? 'visible' : 'hidden';
+            
+            if (currentStep === 5) {
+                nextBtn.textContent = '✓ Generate PDF';
+                nextBtn.className = 'btn btn-finish';
+            } else {
+                nextBtn.textContent = 'Next →';
+                nextBtn.className = 'btn btn-next';
+            }
+        }
+        
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const regional = document.getElementById('regional').value || 'N/A';
+            const school = document.getElementById('school').value || 'N/A';
+            const teacher = document.getElementById('teacher').value || 'N/A';
+            const trimester = document.getElementById('trimester').value || 'N/A';
+            const weeklyHours = document.getElementById('weeklyHours').value || 'N/A';
+            const startDate = document.getElementById('startDate').value || 'N/A';
+            const endDate = document.getElementById('endDate').value || 'N/A';
+            const scenarioNum = document.getElementById('scenario').value;
+            const themeNum = document.getElementById('theme').value;
+            
+            // Get grade dynamically
+            const gradeSelect = document.getElementById('grade');
+            const selectedGrade = gradeSelect.value;
+            const gradeName = selectedGrade && GRADE_INFO[selectedGrade] ? GRADE_INFO[selectedGrade].name : 'N/A';
+            const cefrLevel = document.getElementById('cefrLevel').value || 'N/A';
+            
+            const scenario = currentScenario ? currentScenario.scenario : 'N/A';
+            const theme = currentScenario && themeNum ? 
+                currentScenario.themes.find(t => t.theme_number == themeNum)?.theme || 'N/A' : 'N/A';
+            
+            // Helper para agregar solo logo CENTRADO Y GRANDE en páginas 2+
+            function addLogoOnly() {
+                const img = new Image();
+                img.src = LOGO_URL;
+                // Logo CENTRADO (105 - 30 = 75) y MÁS GRANDE (60x20)
+                doc.addImage(img, 'PNG', 75, 8, 60, 20);
+                return 32;
+            }
+            
+            // Helper para página 1 con logo CENTRADO y encabezado completo
+            function addFirstPageHeader() {
+                const img = new Image();
+                img.src = LOGO_URL;
+                // Logo CENTRADO y MÁS GRANDE en primera página
+                doc.addImage(img, 'PNG', 75, 5, 60, 20);
+                
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.text('MINISTRY OF EDUCATION', 105, 28, { align: 'center' });
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+                doc.text(`REGIONAL EDUCATION DIRECTORATE OF ${regional}`, 105, 33, { align: 'center' });
+                doc.text(`SCHOOL ${school}`, 105, 38, { align: 'center' });
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.text('Theme Planner #1 - Overview', 105, 44, { align: 'center' });
+                return 50;
+            }
+            
+            let yPos = addFirstPageHeader();
+            
+            // Section 1: General Information - CUADROS MÁS AMPLIOS
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text('1. General Information:', 20, yPos);
+            yPos += 6;
+            
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            
+            const tableHeight = 45;
+            doc.rect(20, yPos, 170, tableHeight);
+            
+            const row1Height = 15;
+            doc.line(20, yPos + row1Height, 190, yPos + row1Height);
+            doc.line(105, yPos, 105, yPos + row1Height);
+            doc.line(162, yPos, 162, yPos + row1Height);
+            
+            doc.text('1.Teacher(s):', 22, yPos + 5);
+            const teacherLines = doc.splitTextToSize(teacher, 78);
+            doc.text(teacherLines, 22, yPos + 9);
+            
+            doc.text('3. CEFR Level:', 107, yPos + 5);
+            doc.text(cefrLevel, 107, yPos + 9);
+            
+            doc.text('Trimester:', 164, yPos + 5);
+            doc.text(trimester, 164, yPos + 9);
+            
+            const row2Height = 15;
+            doc.line(20, yPos + row1Height + row2Height, 190, yPos + row1Height + row2Height);
+            doc.line(105, yPos + row1Height, 105, yPos + row1Height + row2Height);
+            doc.line(162, yPos + row1Height, 162, yPos + row1Height + row2Height);
+            
+            doc.text('2. Grade:', 22, yPos + row1Height + 5);
+            doc.text(gradeName, 22, yPos + row1Height + 9);
+            
+            doc.text('5. Weekly Hour(s):', 107, yPos + row1Height + 5);
+            doc.text(weeklyHours, 107, yPos + row1Height + 9);
+            
+            doc.text('6. Start Date:', 164, yPos + row1Height + 5);
+            doc.text(startDate, 164, yPos + row1Height + 9);
+            
+            doc.line(105, yPos + row1Height + row2Height, 105, yPos + tableHeight);
+            doc.line(162, yPos + row1Height + row2Height, 162, yPos + tableHeight);
+            
+            doc.text('7. Scenario:', 22, yPos + row1Height + row2Height + 5);
+            const scenarioLines = doc.splitTextToSize(scenario, 78);
+            doc.text(scenarioLines, 22, yPos + row1Height + row2Height + 9);
+            
+            doc.text('8. Theme:', 107, yPos + row1Height + row2Height + 5);
+            const themeLines = doc.splitTextToSize(theme, 50);
+            doc.text(themeLines, 107, yPos + row1Height + row2Height + 9);
+            
+            doc.text('End Date:', 164, yPos + row1Height + row2Height + 5);
+            doc.text(endDate, 164, yPos + row1Height + row2Height + 9);
+            
+            yPos += tableHeight + 8;
+            
+            // Section 2: Standards and Learning Outcomes - CON PAGINACIÓN AUTOMÁTICA
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text('2. Specific Standards and Learning Outcomes:', 20, yPos);
+            yPos += 6;
+            
+            doc.setFontSize(7.5);
+            doc.setFont(undefined, 'normal');
+            
+            const col1Width = 30;
+            const col2Width = 65;
+            const col3Width = 75;
+            
+            // Calcular altura dinámica por skill
+            selectedSkills.forEach((skillKey, idx) => {
+                const skillData = currentScenario.standards_and_outcomes[skillKey];
+                
+                // Verificar si necesitamos nueva página
+                if (yPos > 220) {
+                    doc.addPage();
+                    yPos = addLogoOnly();
+                    
+                    // Re-dibujar header de tabla
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('2. Specific Standards and Learning Outcomes (continued):', 20, yPos);
+                    yPos += 6;
+                    doc.setFontSize(7.5);
+                }
+                
+                // Calcular altura necesaria para esta fila
+                let maxLines = 0;
+                
+                // Contar líneas de standards
+                const standardsText = skillData.specific_standards.map(s => `• ${s.type}: ${s.standard}`).join('\n');
+                const standardsLines = doc.splitTextToSize(standardsText, col2Width - 3);
+                maxLines = Math.max(maxLines, standardsLines.length);
+                
+                // Obtener Learning Outcomes SELECCIONADOS
+                const selectedOutcomes = [];
+                const checkboxes = document.querySelectorAll(`.outcome-checkbox[data-skill="${skillKey}"]:checked`);
+                checkboxes.forEach(cb => {
+                    const idx = parseInt(cb.id.split('-')[2]);
+                    if (idx < skillData.learning_outcomes.length) {
+                        selectedOutcomes.push(skillData.learning_outcomes[idx]);
+                    }
+                });
+                
+                // Si no hay seleccionados, usar los primeros 2
+                const outcomesToShow = selectedOutcomes.length > 0 ? selectedOutcomes : skillData.learning_outcomes.slice(0, 2);
+                
+                // Contar líneas de outcomes
+                const outcomesText = outcomesToShow.map(o => `• ${o}`).join('\n');
+                const outcomesLines = doc.splitTextToSize(outcomesText, col3Width - 3);
+                maxLines = Math.max(maxLines, outcomesLines.length);
+                
+                // Altura mínima de 25, con suficiente espacio para el texto
+                const rowHeight = Math.max(30, maxLines * 4 + 12);
+                
+                // Dibujar fila
+                const startY = yPos;
+                doc.rect(20, startY, col1Width + col2Width + col3Width, rowHeight);
+                doc.line(20 + col1Width, startY, 20 + col1Width, startY + rowHeight);
+                doc.line(20 + col1Width + col2Width, startY, 20 + col1Width + col2Width, startY + rowHeight);
+                
+                // Header solo en primera fila
+                if (idx === 0) {
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Skills:', 23, startY + 5);
+                    doc.text('Specific Standards', 25 + col1Width, startY + 5);
+                    doc.text('Learning Outcomes:', 27 + col1Width + col2Width, startY + 5);
+                    doc.line(20, startY + 8, 190, startY + 8);
+                    doc.setFont(undefined, 'normal');
+                }
+                
+                const contentStartY = idx === 0 ? startY + 13 : startY + 5;
+                
+                // Skill name
+                const skillNames = {
+                    listening: '1. Listening:',
+                    reading: '2. Reading:',
+                    speaking: '3. Speaking:',
+                    writing: '4. Writing:',
+                    mediation: '5. Mediation:'
+                };
+                doc.text(skillNames[skillKey] || skillKey, 22, contentStartY);
+                
+                // Standards
+                doc.text(standardsLines, 23 + col1Width, contentStartY);
+                
+                // Learning Outcomes
+                doc.text(outcomesLines, 25 + col1Width + col2Width, contentStartY);
+                
+                yPos = startY + rowHeight;
+            });
+            
+            yPos += 8;
+            
+            // Section 3: Communicative Competences
+            if (yPos > 180) {
+                doc.addPage();
+                yPos = addLogoOnly();
+            }
+            
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text('3. Communicative Competences', 20, yPos);
+            yPos += 6;
+            
+            if (currentScenario) {
+                const comp = currentScenario.communicative_competences;
+                doc.setFontSize(8);
+                
+                const colWidth = 56.67;
+                const compHeight = 70;
+                doc.rect(20, yPos, colWidth, compHeight);
+                doc.rect(20 + colWidth, yPos, colWidth, compHeight);
+                doc.rect(20 + (colWidth * 2), yPos, colWidth, compHeight);
+                
+                // Linguistic Competence
+                doc.setFont(undefined, 'bold');
+                doc.text('Linguistic Competence', 22, yPos + 5);
+                doc.setFont(undefined, 'italic');
+                doc.text('(Learn to Know)', 22, yPos + 9);
+                doc.setFont(undefined, 'normal');
+                doc.text('•  Grammatical Features:', 22, yPos + 14);
+                let gramNum = 1;
+                comp.linguistic.grammatical_features.slice(0, 3).forEach(f => {
+                    const lines = doc.splitTextToSize(`${gramNum}. ${f}`, 50);
+                    doc.text(lines, 24, yPos + 14 + (gramNum * 4));
+                    gramNum++;
+                });
+                
+                // Vocabulary - MOSTRAR CONTENIDO
+                doc.text('•  Vocabulary:', 22, yPos + 30);
+                doc.setFontSize(6.5);
+                const vocabText = comp.linguistic.vocabulary || '';
+                const vocabLines = doc.splitTextToSize(vocabText, 50);
+                doc.text(vocabLines.slice(0, 4), 24, yPos + 34);
+                doc.setFontSize(8);
+                
+                // Pronunciation & Phonemic Awareness - MOSTRAR CONTENIDO  
+                doc.text('•  Pronunciation:', 22, yPos + 50);
+                doc.setFontSize(6.5);
+                const pronText = comp.linguistic.pronunciation_phonemic || '';
+                const pronLines = doc.splitTextToSize(pronText, 50);
+                doc.text(pronLines.slice(0, 4), 24, yPos + 54);
+                doc.setFontSize(8);
+                
+                // Pragmatic Competence
+                doc.setFont(undefined, 'bold');
+                doc.text('Pragmatic Competence', 78, yPos + 5);
+                doc.setFont(undefined, 'italic');
+                doc.text('(Learn to Do)', 78, yPos + 9);
+                doc.setFont(undefined, 'normal');
+                comp.pragmatic.skills.slice(0, 3).forEach((s, i) => {
+                    const lines = doc.splitTextToSize(`• ${s}`, 50);
+                    doc.text(lines, 78, yPos + 14 + (i * 10));
+                });
+                
+                // Sociolinguistic Competence
+                doc.setFont(undefined, 'bold');
+                doc.text('Sociolinguistic Competence', 134, yPos + 5);
+                doc.setFont(undefined, 'italic');
+                doc.text('(Learn to Be)', 134, yPos + 9);
+                doc.setFont(undefined, 'normal');
+                comp.sociolinguistic.skills.slice(0, 3).forEach((s, i) => {
+                    const lines = doc.splitTextToSize(`• ${s}`, 50);
+                    doc.text(lines, 134, yPos + 14 + (i * 10));
+                });
+                
+                // 21st-Century Skills Project
+                yPos += compHeight;
+                doc.line(20, yPos, 20 + (colWidth * 3), yPos);
+                doc.rect(20, yPos, colWidth * 3, 18);
+                doc.setFont(undefined, 'bold');
+                doc.text('•  21st-Century Skills Project', 22, yPos + 6);
+                doc.setFont(undefined, 'normal');
+                
+                if (selectedProjects.length > 0) {
+                    selectedProjects.forEach((pNum, idx) => {
+                        const proj = currentScenario.assessment_ideas['21st_century_projects'].find(p => p.project_number === pNum);
+                        if (proj) {
+                            // Verificar si necesitamos nueva página
+                            if (yPos > 240) {
+                                doc.addPage();
+                                yPos = addLogoOnly();
+                            }
+                            
+                            doc.setFont(undefined, 'bold');
+                            doc.text(`${proj.project_number}. ${proj.project_title}`, 22, yPos + 10);
+                            doc.setFont(undefined, 'normal');
+                            const descLines = doc.splitTextToSize(proj.overview, 165);
+                            doc.text(descLines, 25, yPos + 15);
+                            yPos += 15 + (descLines.length * 4);
+                        }
+                    });
+                }
+            }
+            
+            yPos += 22;
+            
+            // Nueva página para Sección 4
+            doc.addPage();
+            yPos = addLogoOnly();
+            
+            // Section 4: Specific Objectives
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text('4. Specific Objectives:', 20, yPos);
+            yPos += 4;
+            doc.setFontSize(7);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(255, 0, 0);
+            doc.text('These objectives must be SMART (Specific, Measurable, Achievable, Relevant, and Time-bound)', 20, yPos);
+            doc.setTextColor(0, 0, 0);
+            yPos += 6;
+            
+            doc.setFontSize(8);
+            const objectives = [
+                { label: 'Listening', value: document.getElementById('obj-listening').value || 'N/A' },
+                { label: 'Reading', value: document.getElementById('obj-reading').value || 'N/A' },
+                { label: 'Speaking', value: document.getElementById('obj-speaking').value || 'N/A' },
+                { label: 'Writing', value: document.getElementById('obj-writing').value || 'N/A' },
+                { label: 'Mediation', value: document.getElementById('obj-mediation').value || 'N/A' }
+            ];
+            
+            const objTableHeight = 90;
+            doc.rect(20, yPos, 170, objTableHeight);
+            
+            const objRowHeight = 18;
+            objectives.forEach((obj, idx) => {
+                const baseY = yPos + (idx * objRowHeight);
+                doc.setFont(undefined, 'bold');
+                doc.text(obj.label, 22, baseY + 5);
+                doc.setFont(undefined, 'normal');
+                const lines = doc.splitTextToSize(obj.value, 165);
+                doc.text(lines.slice(0, 4), 22, baseY + 9);
+                if (idx < 4) {
+                    doc.line(20, baseY + objRowHeight, 190, baseY + objRowHeight);
+                }
+            });
+            
+            yPos += objTableHeight + 6;
+            
+            // Section 5: Assessment Strategies
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text('5. Assessment and Instructional Strategies', 20, yPos);
+            yPos += 6;
+            
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'normal');
+            doc.rect(20, yPos, 170, 24);
+            doc.text('Materials', 22, yPos + 5);
+            const materials = doc.splitTextToSize(document.getElementById('materials').value || 'N/A', 165);
+            doc.text(materials.slice(0, 5), 22, yPos + 9);
+            
+            yPos += 29;
+            doc.rect(20, yPos, 170, 30);
+            doc.text('Differentiated Instruction and Accommodations for Students with', 22, yPos + 5);
+            doc.text('Diverse Learning Needs (DLN)', 22, yPos + 9);
+            const diff = doc.splitTextToSize(document.getElementById('differentiation').value || 'N/A', 165);
+            doc.text(diff.slice(0, 6), 22, yPos + 13);
+            
+            // Nueva página para Sección 6
+            doc.addPage();
+            yPos = addLogoOnly();
+            
+            // Section 6: Learning Sequence
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text('6. Learning Sequence:', 20, yPos);
+            yPos += 4;
+            doc.setFontSize(7);
+            doc.setTextColor(255, 0, 0);
+            doc.text('This section should link back to the SMART objectives', 20, yPos);
+            doc.setTextColor(0, 0, 0);
+            yPos += 6;
+            
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'normal');
+            
+            const lessons = document.querySelectorAll('#lessonsTableBody tr');
+            doc.rect(20, yPos, 120, 8);
+            doc.rect(140, yPos, 50, 8);
+            doc.setFont(undefined, 'bold');
+            doc.text('Learning Sequence', 25, yPos + 5);
+            doc.text('Date', 145, yPos + 5);
+            doc.setFont(undefined, 'normal');
+            
+            yPos += 8;
+            lessons.forEach((lesson, idx) => {
+                const textarea = lesson.querySelector('textarea');
+                const dateInput = lesson.querySelector('input[type="date"]');
+                const sequence = textarea.value || 'N/A';
+                const date = dateInput.value || 'N/A';
+                
+                const lessonHeight = 26;
+                doc.rect(20, yPos, 120, lessonHeight);
+                doc.rect(140, yPos, 50, lessonHeight);
+                
+                doc.setFont(undefined, 'bold');
+                doc.text(`Lesson ${idx + 1}`, 22, yPos + 6);
+                doc.setFont(undefined, 'normal');
+                const seqLines = doc.splitTextToSize(sequence, 115);
+                doc.text(seqLines.slice(0, 6), 22, yPos + 10);
+                doc.text(date, 142, yPos + 6);
+                
+                yPos += lessonHeight;
+                if (yPos > 235) {
+                    doc.addPage();
+                    yPos = addLogoOnly();
+                }
+            });
+            
+            // SECCIÓN DE FIRMAS AL FINAL
+            // Verificar si hay espacio, si no, nueva página
+            if (yPos > 200) {
+                doc.addPage();
+                yPos = addLogoOnly();
+            } else {
+                yPos += 20;
+            }
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('SIGNATURES / FIRMAS', 105, yPos, { align: 'center' });
+            yPos += 15;
+            
+            // Línea divisoria
+            doc.setLineWidth(0.5);
+            doc.line(20, yPos, 190, yPos);
+            yPos += 15;
+            
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            
+            // Primera fila: Docente y Director
+            const signatureY1 = yPos;
+            
+            // Firma digital del docente - estilo cursiva elegante
+            if (teacher && teacher !== 'N/A') {
+                doc.setFontSize(16);
+                doc.setFont('times', 'italic');
+                doc.setTextColor(0, 0, 0);
+                doc.text(teacher, 57.5, signatureY1 - 2, { align: 'center' });
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+            }
+            
+            doc.line(25, signatureY1, 90, signatureY1); // Línea firma Docente
+            doc.text('Teacher / Docente', 57.5, signatureY1 + 5, { align: 'center' });
+            
+            doc.line(110, signatureY1, 175, signatureY1); // Línea firma Director
+            doc.text('Principal / Director(a)', 142.5, signatureY1 + 5, { align: 'center' });
+            
+            yPos += 20;
+            
+            // Segunda fila: Subdirector y Coordinador
+            const signatureY2 = yPos;
+            doc.line(25, signatureY2, 90, signatureY2); // Línea firma Subdirector
+            doc.text('Vice Principal / Subdirector(a)', 57.5, signatureY2 + 5, { align: 'center' });
+            
+            doc.line(110, signatureY2, 175, signatureY2); // Línea firma Coordinador
+            doc.text('Coordinator / Coordinador(a)', 142.5, signatureY2 + 5, { align: 'center' });
+            
+            yPos += 15;
+            
+            // Fecha Y HORA
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'italic');
+            const now = new Date();
+            const dateFormatted = now.toLocaleDateString('es-PA', { year: 'numeric', month: 'long', day: 'numeric' });
+            const timeFormatted = now.toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' });
+            doc.text(`Document generated / Generado: ${dateFormatted} at ${timeFormatted}`, 105, yPos, { align: 'center' });
+            
+            // Construir nombre del archivo descriptivo usando variables YA definidas
+            const teacherClean = teacher.replace(/\s+/g, '_').substring(0, 20) || 'Teacher';
+            const gradeClean = gradeName.replace(/\s+/g, '_') || 'Grade';
+            const dateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            
+            const fileName = `MEDUCA_${teacherClean}_${gradeClean}_Scenario${scenarioNum}_Theme${themeNum}_${dateStr}.pdf`;
+            
+            doc.save(fileName);
+        }
+    </script>
+</body>
+</html>
