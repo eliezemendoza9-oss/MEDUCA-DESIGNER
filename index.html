@@ -1086,6 +1086,17 @@
             scenarioSelect.disabled = true;
             themeSelect.innerHTML = '<option value="">Select a Theme</option>';
             
+            // Clear all dependent UI sections
+            const standardsSection = document.getElementById('standardsSection');
+            if (standardsSection) {
+                standardsSection.classList.remove('visible');
+                document.getElementById('standardsGrid').innerHTML = '';
+            }
+            const competencesGrid = document.getElementById('competencesGrid');
+            if (competencesGrid) competencesGrid.innerHTML = '';
+            const projectsGrid = document.getElementById('projectsGrid');
+            if (projectsGrid) projectsGrid.innerHTML = '';
+            
             // Remove any existing curriculum data script
             const existingScript = document.getElementById('curriculum-script');
             if (existingScript) {
@@ -1149,8 +1160,26 @@
                 themeSelect.appendChild(option);
             });
             
-            loadSkills();
+            // Reset all dependent data when scenario changes
+            selectedSkills = [];
             selectedProjects = [];
+            
+            // Clear standards section
+            const standardsSection = document.getElementById('standardsSection');
+            if (standardsSection) {
+                standardsSection.classList.remove('visible');
+                document.getElementById('standardsGrid').innerHTML = '';
+            }
+            
+            // Clear competences grid
+            const competencesGrid = document.getElementById('competencesGrid');
+            if (competencesGrid) competencesGrid.innerHTML = '';
+            
+            // Clear projects grid
+            const projectsGrid = document.getElementById('projectsGrid');
+            if (projectsGrid) projectsGrid.innerHTML = '';
+            
+            loadSkills();
         }
         
         function onThemeChange() {
@@ -1608,8 +1637,8 @@
                     alert('Please select at least one skill');
                     return;
                 }
-                if (currentStep === 2) loadCompetences();
-                if (currentStep === 4) loadProjects();
+                if (currentStep === 1) loadCompetences();
+                if (currentStep === 3) loadProjects();
                 
                 currentStep++;
                 updateStepDisplay();
@@ -1786,86 +1815,86 @@
             const col2Width = 65;
             const col3Width = 75;
             
-            // Calcular altura dinámica por skill
-            selectedSkills.forEach((skillKey, idx) => {
+            const sec2LineH = 4.2;
+            const sec2Pad   = 4;
+
+            // Draw header row first
+            const headerHeight = 10;
+            doc.rect(20, yPos, col1Width + col2Width + col3Width, headerHeight);
+            doc.line(20 + col1Width,            yPos, 20 + col1Width,            yPos + headerHeight);
+            doc.line(20 + col1Width + col2Width, yPos, 20 + col1Width + col2Width, yPos + headerHeight);
+            doc.setFont(undefined, 'bold');
+            doc.text('Skills:',             23,                          yPos + 6.5);
+            doc.text('Specific Standards',  23 + col1Width,              yPos + 6.5);
+            doc.text('Learning Outcomes:',  23 + col1Width + col2Width,  yPos + 6.5);
+            doc.setFont(undefined, 'normal');
+            yPos += headerHeight;
+
+            // Calcular altura dinamica por skill
+            selectedSkills.forEach((skillKey) => {
                 const skillData = currentScenario.standards_and_outcomes[skillKey];
-                
-                // Verificar si necesitamos nueva página
-                if (yPos > 220) {
+
+                const standardsText = skillData.specific_standards.map(s => `• ${s.type}: ${s.standard}`).join('\n');
+                const standardsLines = doc.splitTextToSize(standardsText, col2Width - 4);
+
+                const selectedOutcomes = [];
+                const checkboxes = document.querySelectorAll(`.outcome-checkbox[data-skill="${skillKey}"]:checked`);
+                checkboxes.forEach(cb => {
+                    const cbIdx = parseInt(cb.id.split('-')[2]);
+                    if (cbIdx < skillData.learning_outcomes.length) {
+                        selectedOutcomes.push(skillData.learning_outcomes[cbIdx]);
+                    }
+                });
+                const outcomesToShow = selectedOutcomes.length > 0 ? selectedOutcomes : skillData.learning_outcomes.slice(0, 2);
+                const outcomesText  = outcomesToShow.map(o => `• ${o}`).join('\n');
+                const outcomesLines = doc.splitTextToSize(outcomesText, col3Width - 4);
+
+                const maxLines  = Math.max(standardsLines.length, outcomesLines.length, 1);
+                const rowHeight = Math.max(14, maxLines * sec2LineH + sec2Pad * 2);
+
+                if (yPos + rowHeight > 268) {
                     doc.addPage();
                     yPos = addLogoOnly();
-                    
-                    // Re-dibujar header de tabla
                     doc.setFontSize(11);
                     doc.setFont(undefined, 'bold');
                     doc.text('2. Specific Standards and Learning Outcomes (continued):', 20, yPos);
                     yPos += 6;
                     doc.setFontSize(7.5);
+                    doc.rect(20, yPos, col1Width + col2Width + col3Width, headerHeight);
+                    doc.line(20 + col1Width,            yPos, 20 + col1Width,            yPos + headerHeight);
+                    doc.line(20 + col1Width + col2Width, yPos, 20 + col1Width + col2Width, yPos + headerHeight);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Skills:',             23,                         yPos + 6.5);
+                    doc.text('Specific Standards',  23 + col1Width,             yPos + 6.5);
+                    doc.text('Learning Outcomes:',  23 + col1Width + col2Width, yPos + 6.5);
+                    doc.setFont(undefined, 'normal');
+                    yPos += headerHeight;
                 }
-                
-                // Calcular altura necesaria para esta fila
-                let maxLines = 0;
-                
-                // Contar líneas de standards
-                const standardsText = skillData.specific_standards.map(s => `• ${s.type}: ${s.standard}`).join('\n');
-                const standardsLines = doc.splitTextToSize(standardsText, col2Width - 3);
-                maxLines = Math.max(maxLines, standardsLines.length);
-                
-                // Obtener Learning Outcomes SELECCIONADOS
-                const selectedOutcomes = [];
-                const checkboxes = document.querySelectorAll(`.outcome-checkbox[data-skill="${skillKey}"]:checked`);
-                checkboxes.forEach(cb => {
-                    const idx = parseInt(cb.id.split('-')[2]);
-                    if (idx < skillData.learning_outcomes.length) {
-                        selectedOutcomes.push(skillData.learning_outcomes[idx]);
-                    }
-                });
-                
-                // Si no hay seleccionados, usar los primeros 2
-                const outcomesToShow = selectedOutcomes.length > 0 ? selectedOutcomes : skillData.learning_outcomes.slice(0, 2);
-                
-                // Contar líneas de outcomes
-                const outcomesText = outcomesToShow.map(o => `• ${o}`).join('\n');
-                const outcomesLines = doc.splitTextToSize(outcomesText, col3Width - 3);
-                maxLines = Math.max(maxLines, outcomesLines.length);
-                
-                // Altura mínima de 25, con suficiente espacio para el texto
-                const rowHeight = Math.max(30, maxLines * 4 + 12);
-                
-                // Dibujar fila
+
                 const startY = yPos;
                 doc.rect(20, startY, col1Width + col2Width + col3Width, rowHeight);
-                doc.line(20 + col1Width, startY, 20 + col1Width, startY + rowHeight);
+                doc.line(20 + col1Width,            startY, 20 + col1Width,            startY + rowHeight);
                 doc.line(20 + col1Width + col2Width, startY, 20 + col1Width + col2Width, startY + rowHeight);
-                
-                // Header solo en primera fila
-                if (idx === 0) {
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Skills:', 23, startY + 5);
-                    doc.text('Specific Standards', 25 + col1Width, startY + 5);
-                    doc.text('Learning Outcomes:', 27 + col1Width + col2Width, startY + 5);
-                    doc.line(20, startY + 8, 190, startY + 8);
-                    doc.setFont(undefined, 'normal');
-                }
-                
-                const contentStartY = idx === 0 ? startY + 13 : startY + 5;
-                
-                // Skill name
+
+                const contentY = startY + sec2Pad + 1;
+
                 const skillNames = {
                     listening: '1. Listening:',
-                    reading: '2. Reading:',
-                    speaking: '3. Speaking:',
-                    writing: '4. Writing:',
+                    reading:   '2. Reading:',
+                    speaking:  '3. Speaking:',
+                    writing:   '4. Writing:',
                     mediation: '5. Mediation:'
                 };
-                doc.text(skillNames[skillKey] || skillKey, 22, contentStartY);
-                
-                // Standards
-                doc.text(standardsLines, 23 + col1Width, contentStartY);
-                
-                // Learning Outcomes
-                doc.text(outcomesLines, 25 + col1Width + col2Width, contentStartY);
-                
+                doc.text(skillNames[skillKey] || skillKey, 22, contentY);
+
+                standardsLines.forEach((line, i) => {
+                    doc.text(line, 23 + col1Width, contentY + i * sec2LineH);
+                });
+
+                outcomesLines.forEach((line, i) => {
+                    doc.text(line, 25 + col1Width + col2Width, contentY + i * sec2LineH);
+                });
+
                 yPos = startY + rowHeight;
             });
             
@@ -1884,90 +1913,117 @@
             
             if (currentScenario) {
                 const comp = currentScenario.communicative_competences;
-                doc.setFontSize(8);
-                
                 const colWidth = 56.67;
-                const compHeight = 70;
-                doc.rect(20, yPos, colWidth, compHeight);
-                doc.rect(20 + colWidth, yPos, colWidth, compHeight);
-                doc.rect(20 + (colWidth * 2), yPos, colWidth, compHeight);
-                
-                // Linguistic Competence
-                doc.setFont(undefined, 'bold');
-                doc.text('Linguistic Competence', 22, yPos + 5);
-                doc.setFont(undefined, 'italic');
-                doc.text('(Learn to Know)', 22, yPos + 9);
+                const lineH = 4.2;
+                const colTextWidth = 52;
+                const pad = 3;
+
+                doc.setFontSize(7.5);
                 doc.setFont(undefined, 'normal');
-                doc.text('•  Grammatical Features:', 22, yPos + 14);
-                let gramNum = 1;
-                comp.linguistic.grammatical_features.slice(0, 3).forEach(f => {
-                    const lines = doc.splitTextToSize(`${gramNum}. ${f}`, 50);
-                    doc.text(lines, 24, yPos + 14 + (gramNum * 4));
-                    gramNum++;
+
+                // Pre-calculate all lines for each column to get dynamic height
+                const gramLines = [];
+                comp.linguistic.grammatical_features.forEach((f, i) => {
+                    doc.splitTextToSize(`${i+1}. ${f}`, colTextWidth).forEach(l => gramLines.push(l));
                 });
-                
-                // Vocabulary - MOSTRAR CONTENIDO
-                doc.text('•  Vocabulary:', 22, yPos + 30);
-                doc.setFontSize(6.5);
-                const vocabText = comp.linguistic.vocabulary || '';
-                const vocabLines = doc.splitTextToSize(vocabText, 50);
-                doc.text(vocabLines.slice(0, 4), 24, yPos + 34);
-                doc.setFontSize(8);
-                
-                // Pronunciation & Phonemic Awareness - MOSTRAR CONTENIDO  
-                doc.text('•  Pronunciation:', 22, yPos + 50);
-                doc.setFontSize(6.5);
-                const pronText = comp.linguistic.pronunciation_phonemic || '';
-                const pronLines = doc.splitTextToSize(pronText, 50);
-                doc.text(pronLines.slice(0, 4), 24, yPos + 54);
-                doc.setFontSize(8);
-                
-                // Pragmatic Competence
+                const vocabLines2 = doc.splitTextToSize(comp.linguistic.vocabulary || '', colTextWidth);
+                const pronLines2  = doc.splitTextToSize(comp.linguistic.pronunciation_phonemic || '', colTextWidth);
+                const col1Total = 2 + 1 + gramLines.length + 1 + vocabLines2.length + 1 + pronLines2.length;
+
+                const pragAllLines = [];
+                comp.pragmatic.skills.forEach(s => {
+                    doc.splitTextToSize(`• ${s}`, colTextWidth).forEach(l => pragAllLines.push(l));
+                });
+                const col2Total = 2 + pragAllLines.length;
+
+                const socioAllLines = [];
+                comp.sociolinguistic.skills.forEach(s => {
+                    doc.splitTextToSize(`• ${s}`, colTextWidth).forEach(l => socioAllLines.push(l));
+                });
+                const col3Total = 2 + socioAllLines.length;
+
+                const maxColLines = Math.max(col1Total, col2Total, col3Total);
+                const compHeight = Math.max(55, maxColLines * lineH + pad * 4);
+
+                if (yPos + compHeight > 270) {
+                    doc.addPage();
+                    yPos = addLogoOnly();
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('3. Communicative Competences (continued)', 20, yPos);
+                    yPos += 6;
+                }
+
+                doc.rect(20,              yPos, colWidth, compHeight);
+                doc.rect(20 + colWidth,   yPos, colWidth, compHeight);
+                doc.rect(20 + colWidth*2, yPos, colWidth, compHeight);
+
+                // COLUMN 1 - Linguistic
+                doc.setFontSize(7.5);
+                let c1y = yPos + pad + 1;
                 doc.setFont(undefined, 'bold');
-                doc.text('Pragmatic Competence', 78, yPos + 5);
+                doc.text('Linguistic Competence', 22, c1y); c1y += lineH;
                 doc.setFont(undefined, 'italic');
-                doc.text('(Learn to Do)', 78, yPos + 9);
-                doc.setFont(undefined, 'normal');
-                comp.pragmatic.skills.slice(0, 3).forEach((s, i) => {
-                    const lines = doc.splitTextToSize(`• ${s}`, 50);
-                    doc.text(lines, 78, yPos + 14 + (i * 10));
-                });
-                
-                // Sociolinguistic Competence
+                doc.text('(Learn to Know)', 22, c1y); c1y += lineH + 1;
                 doc.setFont(undefined, 'bold');
-                doc.text('Sociolinguistic Competence', 134, yPos + 5);
-                doc.setFont(undefined, 'italic');
-                doc.text('(Learn to Be)', 134, yPos + 9);
+                doc.text('• Grammatical Features:', 22, c1y); c1y += lineH;
                 doc.setFont(undefined, 'normal');
-                comp.sociolinguistic.skills.slice(0, 3).forEach((s, i) => {
-                    const lines = doc.splitTextToSize(`• ${s}`, 50);
-                    doc.text(lines, 134, yPos + 14 + (i * 10));
-                });
-                
-                // 21st-Century Skills Project
+                gramLines.forEach(l => { doc.text(l, 24, c1y); c1y += lineH; });
+                c1y += 1;
+                doc.setFont(undefined, 'bold');
+                doc.text('• Vocabulary:', 22, c1y); c1y += lineH;
+                doc.setFont(undefined, 'normal');
+                vocabLines2.forEach(l => { doc.text(l, 24, c1y); c1y += lineH; });
+                c1y += 1;
+                doc.setFont(undefined, 'bold');
+                doc.text('• Pronunciation:', 22, c1y); c1y += lineH;
+                doc.setFont(undefined, 'normal');
+                pronLines2.forEach(l => { doc.text(l, 24, c1y); c1y += lineH; });
+
+                // COLUMN 2 - Pragmatic
+                const c2x = 20 + colWidth + 2;
+                let c2y = yPos + pad + 1;
+                doc.setFont(undefined, 'bold');
+                doc.text('Pragmatic Competence', c2x, c2y); c2y += lineH;
+                doc.setFont(undefined, 'italic');
+                doc.text('(Learn to Do)', c2x, c2y); c2y += lineH + 1;
+                doc.setFont(undefined, 'normal');
+                pragAllLines.forEach(l => { doc.text(l, c2x, c2y); c2y += lineH; });
+
+                // COLUMN 3 - Sociolinguistic
+                const c3x = 20 + colWidth*2 + 2;
+                let c3y = yPos + pad + 1;
+                doc.setFont(undefined, 'bold');
+                doc.text('Sociolinguistic Competence', c3x, c3y); c3y += lineH;
+                doc.setFont(undefined, 'italic');
+                doc.text('(Learn to Be)', c3x, c3y); c3y += lineH + 1;
+                doc.setFont(undefined, 'normal');
+                socioAllLines.forEach(l => { doc.text(l, c3x, c3y); c3y += lineH; });
+
+                // 21st-Century Skills Projects
                 yPos += compHeight;
-                doc.line(20, yPos, 20 + (colWidth * 3), yPos);
-                doc.rect(20, yPos, colWidth * 3, 18);
-                doc.setFont(undefined, 'bold');
-                doc.text('•  21st-Century Skills Project', 22, yPos + 6);
-                doc.setFont(undefined, 'normal');
-                
+
                 if (selectedProjects.length > 0) {
-                    selectedProjects.forEach((pNum, idx) => {
+                    selectedProjects.forEach((pNum) => {
                         const proj = currentScenario.assessment_ideas['21st_century_projects'].find(p => p.project_number === pNum);
                         if (proj) {
-                            // Verificar si necesitamos nueva página
-                            if (yPos > 240) {
+                            doc.setFontSize(7.5);
+                            const titleLines = doc.splitTextToSize(`${proj.project_number}. ${proj.project_title}`, 160);
+                            const descLines  = doc.splitTextToSize(proj.overview, 160);
+                            const projHeight = (titleLines.length + descLines.length) * lineH + pad * 3 + 6;
+
+                            if (yPos + projHeight > 270) {
                                 doc.addPage();
                                 yPos = addLogoOnly();
                             }
-                            
+                            doc.rect(20, yPos, colWidth * 3, projHeight);
+                            let py = yPos + pad + 2;
                             doc.setFont(undefined, 'bold');
-                            doc.text(`${proj.project_number}. ${proj.project_title}`, 22, yPos + 10);
+                            doc.text('• 21st-Century Skills Project', 22, py); py += lineH + 1;
+                            titleLines.forEach(l => { doc.text(l, 22, py); py += lineH; });
                             doc.setFont(undefined, 'normal');
-                            const descLines = doc.splitTextToSize(proj.overview, 165);
-                            doc.text(descLines, 25, yPos + 15);
-                            yPos += 15 + (descLines.length * 4);
+                            descLines.forEach(l => { doc.text(l, 25, py); py += lineH; });
+                            yPos += projHeight;
                         }
                     });
                 }
@@ -2114,12 +2170,13 @@
             // Primera fila: Docente y Director
             const signatureY1 = yPos;
             
-            // Firma digital del docente - estilo cursiva elegante
+            // Firma digital del docente - estilo cursiva elegante (Title Case)
             if (teacher && teacher !== 'N/A') {
+                const teacherTitleCase = teacher.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
                 doc.setFontSize(16);
                 doc.setFont('times', 'italic');
                 doc.setTextColor(0, 0, 0);
-                doc.text(teacher, 57.5, signatureY1 - 2, { align: 'center' });
+                doc.text(teacherTitleCase, 57.5, signatureY1 - 2, { align: 'center' });
                 doc.setFont(undefined, 'normal');
                 doc.setFontSize(9);
             }
@@ -2158,6 +2215,66 @@
             const fileName = `MEDUCA_${teacherClean}_${gradeClean}_Scenario${scenarioNum}_Theme${themeNum}_${dateStr}.pdf`;
             
             doc.save(fileName);
+
+            // After PDF is generated, show options to go back
+            setTimeout(() => {
+                const goBack = confirm('✅ PDF generated successfully!\n\nDo you want to create a new planner?\n(Click OK to return to the beginning)');
+                if (goBack) {
+                    // Reset everything
+                    currentStep = 0;
+                    currentScenario = null;
+                    selectedSkills = [];
+                    selectedProjects = [];
+
+                    // Reset form fields
+                    document.getElementById('grade').value = '';
+                    document.getElementById('cefrLevel').value = '';
+                    document.getElementById('regional').value = '';
+                    document.getElementById('school').value = '';
+                    document.getElementById('teacher').value = '';
+                    document.getElementById('trimester').value = '';
+                    document.getElementById('weeklyHours').value = '';
+                    document.getElementById('startDate').value = '';
+                    document.getElementById('endDate').value = '';
+                    document.getElementById('scenario').innerHTML = '<option value="">Select a Scenario</option>';
+                    document.getElementById('scenario').disabled = true;
+                    document.getElementById('theme').innerHTML = '<option value="">Select a Theme</option>';
+
+                    // Clear objectives
+                    ['obj-listening','obj-reading','obj-speaking','obj-writing','obj-mediation'].forEach(id => {
+                        const el = document.getElementById(id);
+                        el.value = '';
+                        el.readOnly = true;
+                    });
+
+                    // Clear materials & differentiation
+                    ['materials','differentiation'].forEach(id => {
+                        const el = document.getElementById(id);
+                        el.value = '';
+                        el.readOnly = true;
+                    });
+
+                    // Clear manual checkboxes
+                    ['manualObjectives','manualAssessment','manualSequence'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el) el.checked = false;
+                    });
+
+                    // Clear lessons and re-add initial 5
+                    document.getElementById('lessonsTableBody').innerHTML = '';
+                    addInitialLessons();
+
+                    // Clear UI sections
+                    const standardsSection = document.getElementById('standardsSection');
+                    if (standardsSection) { standardsSection.classList.remove('visible'); }
+                    document.getElementById('standardsGrid').innerHTML = '';
+                    document.getElementById('competencesGrid').innerHTML = '';
+                    document.getElementById('projectsGrid').innerHTML = '';
+                    document.getElementById('skillsContainer').innerHTML = '';
+
+                    updateStepDisplay();
+                }
+            }, 500);
         }
     </script>
 </body>
