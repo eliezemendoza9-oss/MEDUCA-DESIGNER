@@ -1485,98 +1485,127 @@
 
         // Smart local generator - uses real context data, no API needed
         function generateSmartObjectives(ctx) {
-            const skills = selectedSkills.length > 0 ? selectedSkills : ['listening','reading','speaking','writing','mediation'];
-            const weeks = ctx.weeks || '4';
-            const cefr = ctx.gradeInfo.cefr || 'A2';
-            const grade = ctx.gradeInfo.name || 'Grade';
+            const comp   = currentScenario.communicative_competences;
+            const grammar = comp.linguistic.grammatical_features.slice(0,2).join(' and ');
+            const prag   = comp.pragmatic.skills[0] || 'communicative tasks';
+            const socio  = comp.sociolinguistic.skills[0] || 'social interaction';
+            const theme  = ctx.theme || 'the theme';
             const scenario = ctx.scenario || 'the scenario';
-            const theme = ctx.theme || 'the theme';
-            const school = ctx.school || 'the school';
-            const regional = ctx.regional || 'the region';
+            const project = currentScenario.assessment_ideas['21st_century_projects']?.[0]?.project_title || 'class project';
 
-            const pcts = ['75%','80%','85%','90%'];
-            const freqs = ['4 out of 5','8 out of 10','9 out of 10','3 out of 4'];
+            // Get first learning outcome per skill from database
+            const so = currentScenario.standards_and_outcomes;
+            const getOutcome = (sk) => so[sk]?.learning_outcomes?.[0] || '';
+            const getStandard = (sk) => so[sk]?.specific_standards?.[0]?.standard || '';
+
             const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-            const skillData = currentScenario.standards_and_outcomes;
-
-            const templates = {
-                listening: [
-                    `By the end of this ${weeks}-week unit, ${grade} students at ${school} will demonstrate understanding of spoken content related to "${theme}" by responding correctly to comprehension tasks with ${rnd(pcts)} accuracy, as assessed through structured classroom activities aligned with the "${scenario}" scenario.`,
-                    `Within ${weeks} weeks, students will identify key information from listening materials about "${theme}" in ${rnd(pcts)} of ${rnd(freqs)} attempts, demonstrating ${cefr}-level receptive skills appropriate for the ${regional} educational context.`
-                ],
-                reading: [
-                    `By the conclusion of Trimester ${ctx.trimester}, students at ${school} will evaluate and extract relevant information from texts related to "${theme}" with ${rnd(pcts)} comprehension accuracy across ${rnd(freqs)} reading tasks linked to the "${scenario}" scenario.`,
-                    `Within ${weeks} weeks, students will read and analyze texts connected to "${theme}", demonstrating understanding of main ideas and supporting details in ${rnd(pcts)} of assigned reading activities at ${cefr} proficiency level.`
-                ],
-                speaking: [
-                    `By week ${weeks}, students will confidently present and discuss ideas related to "${theme}" using appropriate ${cefr}-level language structures, achieving successful communication in ${rnd(freqs)} structured speaking interactions within the "${scenario}" context at ${school}.`,
-                    `Throughout Trimester ${ctx.trimester}, students will engage in meaningful oral exchanges about "${theme}" topics, demonstrating use of target vocabulary and grammar with ${rnd(pcts)} accuracy in ${rnd(freqs)} speaking assessments.`
-                ],
-                writing: [
-                    `By the end of this ${weeks}-week unit, students will produce written work related to "${theme}" that demonstrates coherent organization, appropriate ${cefr}-level grammar, and relevant vocabulary, achieving a score of ${rnd(pcts)} or higher on the MEDUCA writing rubric.`,
-                    `Within ${weeks} weeks, students at ${school} will write structured texts connected to the "${scenario}" scenario and "${theme}" theme, incorporating at least 3 target language features with ${rnd(pcts)} accuracy across ${rnd(freqs)} writing tasks.`
-                ],
-                mediation: [
-                    `By Trimester ${ctx.trimester} assessment, students will successfully mediate and relay information related to "${theme}" between different contexts, demonstrating cross-cultural and linguistic awareness in ${rnd(freqs)} mediation tasks with ${rnd(pcts)} task completion.`,
-                    `Within ${weeks} weeks, students will apply mediation strategies to communicate and adapt content about "${theme}" for different audiences, achieving ${rnd(pcts)} effectiveness as measured by teacher observation and peer feedback rubrics.`
-                ]
-            };
-
             const result = {};
-            ['listening','reading','speaking','writing','mediation'].forEach(sk => {
-                const t = templates[sk];
-                result[sk] = t[Math.floor(Math.random() * t.length)];
-            });
+
+            // LISTENING
+            const listenStd = getStandard('listening');
+            result.listening = rnd([
+                `By the end of the lesson, students will be able to identify and extract key information from a spoken or audio source related to "${theme}", using ${grammar} to complete at least one comprehension task accurately.`,
+                `By the end of the lesson, students will be able to listen to and understand spoken content about "${theme}" and respond to guided questions, demonstrating correct use of ${grammar}.`
+            ]);
+
+            // READING
+            result.reading = rnd([
+                `By the end of the lesson, students will be able to read a short text related to "${theme}" and write 3–4 sentence responses using ${grammar} to answer comprehension questions.`,
+                `By the end of the lesson, students will be able to identify the main idea and key details from an informational text about "${theme}" and share their thoughts using target vocabulary.`
+            ]);
+
+            // SPEAKING
+            result.speaking = rnd([
+                `By the end of the lesson, students will be able to take part in a short group discussion about "${theme}" by giving at least two examples using ${grammar} and responding to a classmate's idea.`,
+                `By the end of the lesson, students will be able to explain rules or ideas related to "${theme}" using ${grammar} in a structured pair or group activity.`
+            ]);
+
+            // WRITING
+            result.writing = rnd([
+                `By the end of the lesson, students will be able to write 3–4 simple sentences about "${theme}" using ${grammar}, and improve one sentence after receiving peer feedback.`,
+                `By the end of the lesson, students will be able to draft a short written response about "${theme}" using ${grammar}, selecting one sentence to include in their ${project}.`
+            ]);
+
+            // MEDIATION
+            result.mediation = rnd([
+                `By the end of the lesson, students will be able to write one simple interpretation of a text or visual related to "${theme}" using a matching written prompt and a visual aid.`,
+                `By the end of the lesson, students will be able to relay key information from a "${theme}" text to a partner using their own words and a supporting visual or written prompt.`
+            ]);
+
+            // Only include selected skills — others stay blank
+            if (selectedSkills.length > 0) {
+                ['listening','reading','speaking','writing','mediation'].forEach(sk => {
+                    if (!selectedSkills.includes(sk)) result[sk] = '';
+                });
+            }
+
             return JSON.stringify(result);
         }
 
         function generateSmartAssessment(ctx) {
-            const isRural = ['bocas','darien','veraguas','chiriqui','herrera','los santos','cocle','colon','guna','comarca','ngobe','embera'].some(r => ctx.regional.toLowerCase().includes(r));
-            const scenario = ctx.scenario || 'the scenario';
-            const theme = ctx.theme || 'the theme';
-            const grade = ctx.gradeInfo.name || 'Grade';
-            const cefr = ctx.gradeInfo.cefr || 'A2';
-            const comp = currentScenario.communicative_competences;
-            const grammar = comp.linguistic.grammatical_features.slice(0,3).join(', ');
-            const vocab = comp.linguistic.vocabulary || 'topic vocabulary';
+            const comp   = currentScenario.communicative_competences;
+            const grammar = comp.linguistic.grammatical_features.slice(0,2).join(', ');
+            const theme  = ctx.theme || 'the theme';
+            const isRural = ['bocas','darien','veraguas','chiriqui','herrera','los santos','cocle','colon','guna','comarca','ngobe','embera']
+                            .some(r => ctx.regional.toLowerCase().includes(r));
 
-            const urbanMaterials = `Printed reading texts and articles related to "${theme}", digital presentations (PowerPoint/Google Slides), audio recordings with ${cefr}-level listening tasks, vocabulary flashcards featuring "${grammar}" structures, graphic organizers for writing scaffolding, access to online resources and videos, whiteboard and markers, assessment rubrics aligned with MEDUCA standards, and supplementary practice worksheets on "${theme}".`;
-            const ruralMaterials = `Printed materials related to "${theme}" (adapted for local context), handmade vocabulary cards featuring "${grammar}" structures, reusable activity sheets, picture dictionaries, teacher-created audio materials (pre-recorded), community resource connections to bring "${theme}" topics to life, blackboard activities, locally-relevant reading texts, and MEDUCA-aligned assessment rubrics.`;
+            // MATERIALS — simple list like MEDUCA example
+            const baseMaterials = ['Pictures', 'Whiteboard', 'Worksheets', 'Dictionaries', 'Reading texts'];
+            const digitalMaterials = ['Audios/Videos', 'Digital presentations', 'Online resources'];
+            const ruralExtra = ['Blackboard', 'Handmade flashcards', 'Reusable activity sheets', 'Pre-recorded audio'];
+            const urbanExtra = ['Audios/Videos', 'Projector/Screen', 'Vocabulary flashcards', 'Graphic organizers'];
 
-            const materials = isRural ? ruralMaterials : urbanMaterials;
+            const matList = isRural
+                ? [...baseMaterials, ...ruralExtra]
+                : [...baseMaterials, ...urbanExtra];
 
-            const differentiation = `VISUAL LEARNERS: Graphic organizers, mind maps, and illustrated vocabulary cards related to "${theme}". Color-coded grammar charts for "${grammar}" structures. ` +
-                `AUDITORY LEARNERS: Think-pair-share activities, choral reading, and discussion circles about "${scenario}" topics. ` +
-                `KINESTHETIC LEARNERS: Role-play scenarios, interactive stations, and hands-on projects connected to "${theme}". ` +
-                `STUDENTS NEEDING EXTRA SUPPORT (Tier 2-3): Simplified texts at a lower sub-level, sentence frames and word banks, extended response time, peer buddy system, and modified assessment criteria. ` +
-                `ADVANCED LEARNERS: Extended research tasks on "${theme}", leadership roles in group activities, additional writing challenges using complex "${grammar}" structures. ` +
-                `DLN ACCOMMODATIONS: Communication boards for non-verbal students, large-print materials, preferential seating, chunked instructions, and frequent check-ins aligned with ${grade} IEP/accommodation plans.`;
+            const materials = matList.join('\n• ');
 
-            return JSON.stringify({ materials, differentiation });
+            // DIFFERENTIATION — short and practical like MEDUCA example
+            const differentiation =
+                `Provide sentence starters and word banks related to "${theme}".
+` +
+                `Use visuals, prompts, and sentence templates to support comprehension.
+` +
+                `Implement peer feedback and peer support strategies.
+` +
+                `For students needing extra support: simplify texts, allow extended time, and use ${grammar} sentence frames.
+` +
+                `For advanced learners: assign extended writing or speaking tasks using more complex structures.`;
+
+            return JSON.stringify({ materials: '• ' + materials, differentiation });
         }
 
         function generateSmartSequence(ctx, numLessons) {
-            const scenario = ctx.scenario || 'the scenario';
-            const theme = ctx.theme || 'the theme';
-            const grade = ctx.gradeInfo.name || 'Grade';
-            const cefr = ctx.gradeInfo.cefr || 'A2';
-            const comp = currentScenario.communicative_competences;
+            const comp    = currentScenario.communicative_competences;
             const grammar = comp.linguistic.grammatical_features.slice(0,2).join(' and ');
-            const pragSkill = comp.pragmatic.skills[0] || 'communicative skills';
-            const skills = selectedSkills.join(', ');
+            const theme   = ctx.theme || 'the theme';
+            const scenario = ctx.scenario || 'the scenario';
+            const project = currentScenario.assessment_ideas['21st_century_projects']?.[0]?.project_title || 'class project';
+            const skills  = selectedSkills.length > 0 ? selectedSkills : ['listening','reading','speaking','writing','mediation'];
+            const prag    = comp.pragmatic.skills[0] || 'communicative task';
 
-            const lessonTemplates = [
-                `WARM-UP: Activate prior knowledge about "${theme}" using a quick visual prompt or KWL chart (5 min). MAIN ACTIVITY: Introduce key vocabulary and "${grammar}" structures through contextualized examples related to "${scenario}". Guided reading/listening task on "${theme}" (20 min). PRACTICE: Pair work — students discuss topic using target language frames (10 min). CLOSING: Exit ticket — students write 2 sentences using new vocabulary. Skills focus: ${skills}.`,
-                `WARM-UP: Review previous vocabulary with a matching game or flashcard activity (5 min). MAIN ACTIVITY: Develop ${skills} through a structured task connected to "${theme}" — students analyze a model text/audio and identify language features including "${grammar}" (20 min). PRACTICE: Small group work applying target structures in a realistic "${scenario}" context (10 min). CLOSING: Peer feedback and self-assessment checklist. SMART link: measurable production of target language.`,
-                `WARM-UP: Think-pair-share — What do you know about "${theme}"? (5 min). MAIN ACTIVITY: Students practice "${pragSkill}" through a communicative task aligned with "${scenario}". Focus on ${skills} integration (20 min). PRACTICE: Individual or pair task — produce written or oral output using "${grammar}" structures with scaffolded support (10 min). CLOSING: Class gallery walk or share-out of student work.`,
-                `WARM-UP: Quick review game — vocabulary from "${theme}" unit (5 min). MAIN ACTIVITY: Deeper exploration of "${scenario}" context — students read/listen to authentic or adapted material and complete analysis tasks targeting ${skills} (20 min). PRACTICE: Collaborative project work — students create a product (poster, dialogue, short text) demonstrating understanding of "${theme}" (10 min). CLOSING: Group presentations and teacher formative feedback.`,
-                `WARM-UP: Reflection activity — What have we learned about "${theme}"? (5 min). MAIN ACTIVITY: Summative or performance task aligned with SMART objectives — students demonstrate ${skills} through a structured assessment activity connected to "${scenario}" (25 min). CLOSING: Self-evaluation using rubric, teacher provides written or verbal feedback. SMART check: Did students meet the measurable criteria set in objectives?`
+            // Build progressive lessons connected to the 21st century project — MEDUCA style
+            const allTemplates = [
+                `Students watch or listen to materials to identify key information related to "${theme}", write at least three ideas using ${grammar}, and select one to include in their ${project}.`,
+                `Students read short, scaffolded texts about "${theme}", answer comprehension questions, and write a 3–5 sentence reflection using ${grammar}, choosing one sentence to add to their ${project}.`,
+                `Through guided pair work, students explain ideas about "${theme}" using ${grammar}, practice ${prag}, and support their responses with visuals or examples.`,
+                `Students write 3–4 sentences about "${theme}" using ${grammar}, improve one sentence after a classmate's suggestion, and choose one sentence to include in their ${project}.`,
+                `Students present and share their ${project} with the class, using ${grammar} and target vocabulary from the "${theme}" unit. Peers provide feedback using a simple checklist.`
             ];
 
+            // Extra templates for longer sequences
+            const extraTemplates = [
+                `Students review vocabulary from "${theme}" through a matching activity and practice using ${grammar} in a short guided dialogue or written task connected to "${scenario}".`,
+                `Students collaborate in small groups to discuss "${theme}", assign roles, and produce a short written or oral output using ${grammar} structures and topic vocabulary.`,
+                `Students complete a formative task where they demonstrate understanding of "${theme}" by producing written or spoken content using ${grammar}, receiving teacher and peer feedback.`
+            ];
+
+            const combined = [...allTemplates, ...extraTemplates];
             const lessons = [];
             for (let i = 0; i < numLessons; i++) {
-                lessons.push(lessonTemplates[i % lessonTemplates.length]);
+                lessons.push(combined[i % combined.length]);
             }
             return JSON.stringify(lessons);
         }
