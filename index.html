@@ -1456,164 +1456,195 @@
             });
         }
         
-        // AI GENERATION con respuestas variadas
-        const objectivesVariations = [
-            {
-                listening: `By the end of this ${getWeeks()}-week unit, students will recognize and respond to basic greetings and polite expressions with at least 80% accuracy in classroom interactions.`,
-                reading: `Students will identify and name at least 3 main characters from picture books about friendship, demonstrating comprehension through pointing and verbal responses.`,
-                speaking: `Students will successfully introduce themselves using "My name is [name]" in 9 out of 10 opportunities during structured practice activities by the end of the unit.`,
-                writing: `Students will create at least 2 drawings representing friendship scenarios, including simple symbols or scribbles to show greeting exchanges.`,
-                mediation: `Students will demonstrate understanding of polite expressions by mimicking appropriate gestures and body language from picture books in 4 out of 5 attempts.`
-            },
-            {
-                listening: `Within ${getWeeks()} weeks, students will demonstrate understanding of basic English greetings by responding appropriately (verbally or through gestures) in 8 out of 10 classroom scenarios.`,
-                reading: `By unit's end, students will point to and name characters saying "please" or "thank you" in familiar stories with 75% accuracy when prompted by teacher.`,
-                speaking: `Students will greet peers and teachers using simple English phrases ("hello," "goodbye") with appropriate gestures in at least 5 daily interactions by week ${getWeeks()}.`,
-                writing: `Within the unit timeframe, students will produce drawings showing friendship interactions, incorporating at least one greeting or polite expression symbol in each drawing.`,
-                mediation: `Students will role-play greeting scenarios from picture books, using appropriate body language and basic English words, completing 3 successful exchanges per session.`
-            },
-            {
-                listening: `Students will identify their names when called in English and recognize polite words ("please," "thank you") with 90% accuracy by the conclusion of this ${getWeeks()}-week period.`,
-                reading: `By the final week, students will select correct character pictures when hearing names from friendship stories, achieving 80% accuracy across 5 different story sessions.`,
-                speaking: `Each student will participate in basic greeting exchanges ("hello," "hi," "goodbye") with classmates, completing at least 6 successful interactions daily by unit end.`,
-                writing: `Students will draw and share pictures of themselves with friends, incorporating greeting gestures or polite expressions, completing 3 drawings throughout the unit.`,
-                mediation: `By week ${getWeeks()}, students will demonstrate polite expressions through actions and simple words in peer interactions, achieving success in 8 out of 10 opportunities.`
-            }
-        ];
-        
-        const assessmentVariations = [
-            {
-                materials: `Picture books featuring friendship themes (min. 5 titles), greeting flash cards with visual cues, name tags with space for decoration, art materials (crayons, markers, construction paper), audio recordings of English greetings, hand puppets for role-play, digital storybook app (if technology available), greeting posters for classroom display.`,
-                differentiation: `Visual learners: Extra picture supports and visual schedules. Kinesthetic learners: Movement-based greeting activities and role-play stations. Students needing extra support: Simplified response options, extended wait time, bilingual picture cards. Advanced learners: Additional vocabulary and complex sentence frames. ELL support: Home language connections, visual dictionaries, peer buddies.`
-            },
-            {
-                materials: `Diverse picture books about meeting friends and politeness, laminated greeting cards for durability, personalized name tag materials, variety of art supplies including stickers, recorded greeting songs in English, felt board with character pieces for storytelling, tablet with interactive greeting games, word wall with greeting vocabulary.`,
-                differentiation: `For students with limited attention: Shortened activities with frequent breaks. For shy students: Small group practice before whole class participation. For students with motor challenges: Adaptive grip tools, pre-cut shapes. For quick learners: Leadership roles in activities, creating their own greeting cards. Universal supports: Visual timers, step-by-step instruction cards, multilingual resources.`
-            },
-            {
-                materials: `Collection of friendship-themed picture books from diverse cultures, large greeting word cards with pictures, materials for name tag creation (cardstock, decorative supplies), drawing materials (various paper sizes, drawing tools), audio player with greeting phrases, dress-up items for role-play, interactive whiteboard for digital storytelling, classroom greeting chart for tracking progress.`,
-                differentiation: `Tier 1: All students receive visual supports and modeling. Tier 2: Small group reteaching with simplified language and extra practice opportunities. Tier 3: One-on-one support with gesture-only responses accepted initially. Enrichment: Students create greeting books for younger classes. Accommodations: Speech-to-text apps, communication boards, flexible seating for engagement.`
-            }
-        ];
-        
-        const sequenceVariations = [
-            [
-                `Warm-up: "Hello Song" with gestures. Introduction: Teacher models greetings using puppets. Practice: Students greet partners using picture cards as prompts. Wrap-up: Circle time - each student waves and says "goodbye."`,
-                `Review: Previous day's greetings with actions. New learning: Introduce "please" and "thank you" through story. Guided practice: Role-play sharing toys with polite words. Independent work: Draw a picture showing saying "thank you."`,
-                `Opening: Greeting game - students find partner and greet. Main activity: Create personalized name tags with teacher support. Practice: Walk around room introducing themselves ("My name is..."). Closing: Share name tags in circle.`,
-                `Energizer: Movement song about friends. Reading: Picture book about making new friends. Discussion: Simple questions about characters and friendship. Activity: Draw favorite part of story, practice describing with "This is..."`,
-                `Review week: Stations rotating through greeting activities, polite expression practice, name introduction games, and friendship drawings. Assessment: Teacher observes and documents student performance at each station.`
-            ],
-            [
-                `Start: Teacher greets each student individually at door. Circle time: Practice responding to greetings with gestures and words. Story: Read book about first day of school. Extension: Act out story with student volunteers.`,
-                `Begin: Review greetings with call-and-response. Teach: "Please" and "thank you" through demonstration. Practice: Snack time - students request items politely. Reinforce: Create "Thank You" card for classroom helper.`,
-                `Hook: Mystery bag with names - pull and greet that person. Lesson: Practice "My name is..." with mirror. Activity: Decorate individual name cards with favorite colors. Share: Present name cards to classmates.`,
-                `Warm-up: "Making Friends" song and dance. Read-aloud: Story about sharing and kindness. Discussion: Talk about being a good friend. Create: Draw picture of playing with a friend, label with helper.`,
-                `Culmination: Friendship celebration with greeting stations. Stations include: greeting card making, role-play corner, name game, story retelling. Conclude: Class performance of "Hello and Goodbye Song" for visitors.`
-            ],
-            [
-                `Entry routine: Students greet teacher at classroom door. Opening: "Good Morning" song circle. Mini-lesson: Different ways to say hello (wave, handshake, smile). Practice: Partner greetings with choice of gesture. Exit ticket: Wave goodbye.`,
-                `Launch: Puppet show demonstrating polite words. Instruction: When and why we say "please" and "thank you." Application: Pretend restaurant - ordering snacks politely. Reflection: Draw favorite polite expression.`,
-                `Introduction: Play "Name Game" song. Teaching: Breaking down "My name is [name]" phrase. Modeling: Teacher demonstrates with stuffed animals. Practice: Students introduce classroom toys. Extension: Design name flags.`,
-                `Engage: Photo slideshow of friends helping each other. Read: Interactive book about friendship actions. Process: Act out ways to be a good friend. Create: Friendship bracelet or drawing for partner.`,
-                `Showcase: Students demonstrate learning through friendship festival. Activities: Greeting guests, sharing projects, performing songs. Assessment: Photo documentation and student self-reflection using emoji faces.`
-            ]
-        ];
-        
-        function getWeeks() {
-            return document.getElementById('weeks').value || '4';
+        // ── REAL AI GENERATION via Claude API ──────────────────────────────
+
+        function buildContext() {
+            const grade    = document.getElementById('grade').value;
+            const gradeInfo = GRADE_INFO[grade] || {};
+            const school   = document.getElementById('school').value || 'N/A';
+            const regional = document.getElementById('regional').value || 'N/A';
+            const trimester = document.getElementById('trimester').value || 'N/A';
+            const weeks    = document.getElementById('weeklyHours').value || 'N/A';
+            const scenario = currentScenario ? currentScenario.scenario : 'N/A';
+            const themeNum = document.getElementById('theme').value;
+            const theme    = (currentScenario && themeNum)
+                ? (currentScenario.themes.find(t => t.theme_number == themeNum)?.theme || 'N/A')
+                : 'N/A';
+
+            const skillsSummary = selectedSkills.map(sk => {
+                const d = currentScenario.standards_and_outcomes[sk];
+                const standards = d.specific_standards.map(s => `${s.type}: ${s.standard}`).join('; ');
+                const outcomes  = d.learning_outcomes.slice(0,2).join('; ');
+                return `${sk.toUpperCase()} — Standards: ${standards} | Outcomes: ${outcomes}`;
+            }).join('\n');
+
+            const comp = currentScenario.communicative_competences;
+            const competences = `Linguistic: ${comp.linguistic.grammatical_features.join(', ')} | Vocabulary: ${comp.linguistic.vocabulary} | Pragmatic: ${comp.pragmatic.skills.join('; ')} | Sociolinguistic: ${comp.sociolinguistic.skills.join('; ')}`;
+
+            return { grade, gradeInfo, school, regional, trimester, weeks, scenario, theme, skillsSummary, competences };
         }
-        
-        function getRandomVariation(arr) {
-            return arr[Math.floor(Math.random() * arr.length)];
+
+        async function callClaudeAPI(prompt) {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 1000,
+                    messages: [{ role: 'user', content: prompt }]
+                })
+            });
+            const data = await response.json();
+            return data.content?.[0]?.text || '';
         }
-        
+
+        async function setBtnLoading(btn) {
+            const orig = btn.innerHTML;
+            btn.innerHTML = '⏳ Generating with AI...';
+            btn.disabled = true;
+            return orig;
+        }
+
         async function generateObjectives() {
-            if (!currentScenario) {
-                alert('Please select a scenario first');
-                return;
-            }
-            
+            if (!currentScenario) { alert('Please select a scenario first'); return; }
             const btn = event.target;
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
-            btn.disabled = true;
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const suggestion = getRandomSuggestion(currentScenario.scenario_number);
-            
-            if (suggestion && suggestion.objectives) {
-                document.getElementById('obj-listening').value = suggestion.objectives.listening;
-                document.getElementById('obj-reading').value = suggestion.objectives.reading;
-                document.getElementById('obj-speaking').value = suggestion.objectives.speaking;
-                document.getElementById('obj-writing').value = suggestion.objectives.writing;
-                document.getElementById('obj-mediation').value = suggestion.objectives.mediation;
-            } else {
-                alert('No suggestions available for Scenario ' + currentScenario.scenario_number + ' yet. Only Scenarios 1-2 have full suggestions.');
-            }
-            
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-        }
-        
-        async function generateAssessment() {
-            if (!currentScenario) {
-                alert('Please select a scenario first');
-                return;
-            }
-            
-            const btn = event.target;
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
-            btn.disabled = true;
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const suggestion = getRandomSuggestion(currentScenario.scenario_number);
-            
-            if (suggestion && suggestion.assessment) {
-                document.getElementById('materials').value = suggestion.assessment.materials;
-                document.getElementById('differentiation').value = suggestion.assessment.differentiation;
-            } else {
-                alert('No suggestions available for Scenario ' + currentScenario.scenario_number + ' yet.');
-            }
-            
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-        }
-        
-        async function generateSequence() {
-            if (!currentScenario) {
-                alert('Please select a scenario first');
-                return;
-            }
-            
-            const btn = event.target;
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
-            btn.disabled = true;
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const suggestion = getRandomSuggestion(currentScenario.scenario_number);
-            
-            if (suggestion && suggestion.sequence) {
-                const textareas = document.querySelectorAll('#lessonsTableBody textarea');
-                textareas.forEach((textarea, idx) => {
-                    if (idx < suggestion.sequence.length) {
-                        textarea.value = suggestion.sequence[idx];
-                    }
+            const orig = await setBtnLoading(btn);
+            try {
+                const ctx = buildContext();
+                const prompt = `You are an expert MEDUCA Panama English curriculum designer.
+Generate SMART specific objectives (Specific, Measurable, Achievable, Relevant, Time-bound) for EACH of the following skills.
+
+CONTEXT:
+- School: ${ctx.school} | Region: ${ctx.regional}
+- Grade: ${ctx.gradeInfo.name} | CEFR: ${ctx.gradeInfo.cefr} - ${ctx.gradeInfo.band}
+- Trimester: ${ctx.trimester} | Weekly Hours: ${ctx.weeks}
+- Scenario: ${ctx.scenario}
+- Theme: ${ctx.theme}
+
+STANDARDS & OUTCOMES FOR SELECTED SKILLS:
+${ctx.skillsSummary}
+
+COMMUNICATIVE COMPETENCES:
+${ctx.competences}
+
+Write ONE SMART objective per skill. Each objective must:
+- Reference the specific scenario/theme context
+- Be appropriate for ${ctx.gradeInfo.cefr} level students
+- Include a measurable percentage or frequency indicator
+- Mention a time frame
+
+Respond ONLY with a JSON object, no markdown, no explanation:
+{"listening":"...","reading":"...","speaking":"...","writing":"...","mediation":"..."}
+
+If a skill was not selected, still include it with a relevant objective for completeness.`;
+
+                const raw = await callClaudeAPI(prompt);
+                const clean = raw.replace(/\`\`\`json|\`\`\`/g, '').trim();
+                const obj = JSON.parse(clean);
+                ['listening','reading','speaking','writing','mediation'].forEach(sk => {
+                    const el = document.getElementById('obj-' + sk);
+                    if (el && obj[sk]) { el.value = obj[sk]; el.readOnly = false; }
                 });
-            } else {
-                alert('No suggestions available for Scenario ' + currentScenario.scenario_number + ' yet.');
+            } catch(e) {
+                alert('AI generation failed. Please check your connection or write manually.\nError: ' + e.message);
             }
-            
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
+            btn.innerHTML = orig; btn.disabled = false;
         }
-        
-        function addInitialLessons() {
+
+        async function generateAssessment() {
+            if (!currentScenario) { alert('Please select a scenario first'); return; }
+            const btn = event.target;
+            const orig = await setBtnLoading(btn);
+            try {
+                const ctx = buildContext();
+                const prompt = `You are an expert MEDUCA Panama English curriculum designer.
+Generate assessment and instructional strategy content for a theme planner.
+
+CONTEXT:
+- School: ${ctx.school} | Region: ${ctx.regional}
+- Grade: ${ctx.gradeInfo.name} | CEFR: ${ctx.gradeInfo.cefr} - ${ctx.gradeInfo.band}
+- Trimester: ${ctx.trimester} | Weekly Hours: ${ctx.weeks}
+- Scenario: ${ctx.scenario}
+- Theme: ${ctx.theme}
+
+SELECTED SKILLS: ${selectedSkills.join(', ')}
+COMMUNICATIVE COMPETENCES: ${ctx.competences}
+
+Generate:
+1. MATERIALS: A practical list of materials and resources appropriate for this grade/level/context. Consider if the school might be in an urban or rural area of Panama based on the region "${ctx.regional}". Be specific and realistic.
+2. DIFFERENTIATION: Differentiated instruction strategies and accommodations for students with Diverse Learning Needs (DLN). Include strategies for different learning styles, students who need extra support, and advanced learners.
+
+Respond ONLY with a JSON object, no markdown, no explanation:
+{"materials":"...","differentiation":"..."}`;
+
+                const raw = await callClaudeAPI(prompt);
+                const clean = raw.replace(/\`\`\`json|\`\`\`/g, '').trim();
+                const obj = JSON.parse(clean);
+                ['materials','differentiation'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && obj[id]) { el.value = obj[id]; el.readOnly = false; }
+                });
+            } catch(e) {
+                alert('AI generation failed. Please check your connection or write manually.\nError: ' + e.message);
+            }
+            btn.innerHTML = orig; btn.disabled = false;
+        }
+
+        async function generateSequence() {
+            if (!currentScenario) { alert('Please select a scenario first'); return; }
+            const btn = event.target;
+            const orig = await setBtnLoading(btn);
+            try {
+                const ctx = buildContext();
+                const rows = document.querySelectorAll('#lessonsTableBody tr');
+                const numLessons = rows.length || 5;
+                const prompt = `You are an expert MEDUCA Panama English curriculum designer.
+Generate a detailed learning sequence for ${numLessons} lessons.
+
+CONTEXT:
+- School: ${ctx.school} | Region: ${ctx.regional}
+- Grade: ${ctx.gradeInfo.name} | CEFR: ${ctx.gradeInfo.cefr} - ${ctx.gradeInfo.band}
+- Trimester: ${ctx.trimester} | Weekly Hours: ${ctx.weeks}
+- Scenario: ${ctx.scenario}
+- Theme: ${ctx.theme}
+
+SELECTED SKILLS: ${selectedSkills.join(', ')}
+STANDARDS & OUTCOMES:
+${ctx.skillsSummary}
+COMMUNICATIVE COMPETENCES: ${ctx.competences}
+
+For each lesson provide a concise but complete description including:
+- Warm-up activity
+- Main learning activity (linked to the scenario/theme)
+- Practice activity
+- Closing/assessment moment
+
+Each lesson should build progressively on the previous one.
+Lessons must be appropriate for ${ctx.gradeInfo.cefr} (${ctx.gradeInfo.band}) level.
+
+Respond ONLY with a JSON array of exactly ${numLessons} strings, no markdown, no explanation:
+["Lesson 1 description...","Lesson 2 description...",...]`;
+
+                const raw = await callClaudeAPI(prompt);
+                const clean = raw.replace(/\`\`\`json|\`\`\`/g, '').trim();
+                const arr = JSON.parse(clean);
+                rows.forEach((row, i) => {
+                    const ta = row.querySelector('textarea');
+                    if (ta && arr[i]) { ta.value = arr[i]; ta.readOnly = false; }
+                });
+            } catch(e) {
+                alert('AI generation failed. Please check your connection or write manually.\nError: ' + e.message);
+            }
+            btn.innerHTML = orig; btn.disabled = false;
+        }
+
+        function getWeeks() {
+            return document.getElementById('weeklyHours')?.value || '4';
+        }
+
+        function getRandomSuggestion() { return null; }
+
+                function addInitialLessons() {
             for (let i = 1; i <= 5; i++) {
                 addLesson();
             }
