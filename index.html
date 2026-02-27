@@ -1485,55 +1485,70 @@
 
         // Smart local generator - uses real context data, no API needed
         function generateSmartObjectives(ctx) {
-            const comp   = currentScenario.communicative_competences;
-            const grammar = comp.linguistic.grammatical_features.slice(0,2).join(' and ');
-            const prag   = comp.pragmatic.skills[0] || 'communicative tasks';
-            const socio  = comp.sociolinguistic.skills[0] || 'social interaction';
-            const theme  = ctx.theme || 'the theme';
+            const comp    = currentScenario.communicative_competences;
+            const g       = comp.linguistic.grammatical_features;
+            const grammar = g.slice(0,2).join(' and ');
+            const gram1   = g[0] || 'target structures';
+            const gram2   = g[1] || 'language features';
+            const gram3   = g[2] || gram1;
+            const prag    = comp.pragmatic.skills[0] || 'communicative tasks';
+            const prag2   = comp.pragmatic.skills[1] || prag;
+            const socio   = comp.sociolinguistic.skills[0] || 'social interaction';
+            const theme   = ctx.theme || 'the theme';
             const scenario = ctx.scenario || 'the scenario';
             const project = currentScenario.assessment_ideas['21st_century_projects']?.[0]?.project_title || 'class project';
+            const school  = ctx.school || 'school';
+            const weeks   = ctx.weeks || '4';
+            const so      = currentScenario.standards_and_outcomes;
+            const out1    = (sk) => so[sk]?.learning_outcomes?.[0] || '';
+            const out2    = (sk) => so[sk]?.learning_outcomes?.[1] || out1(sk);
+            const std1    = (sk) => so[sk]?.specific_standards?.[0]?.standard || '';
 
-            // Get first learning outcome per skill from database
-            const so = currentScenario.standards_and_outcomes;
-            const getOutcome = (sk) => so[sk]?.learning_outcomes?.[0] || '';
-            const getStandard = (sk) => so[sk]?.specific_standards?.[0]?.standard || '';
-
+            // Seed randomness with timestamp so every click is different
             const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
             const result = {};
 
-            // LISTENING
-            const listenStd = getStandard('listening');
             result.listening = rnd([
                 `By the end of the lesson, students will be able to identify and extract key information from a spoken or audio source related to "${theme}", using ${grammar} to complete at least one comprehension task accurately.`,
-                `By the end of the lesson, students will be able to listen to and understand spoken content about "${theme}" and respond to guided questions, demonstrating correct use of ${grammar}.`
+                `By the end of the lesson, students will be able to listen to and understand spoken content about "${theme}" and respond to at least two guided questions, demonstrating correct use of ${gram1}.`,
+                `By the end of the lesson, students will be able to identify the speaker's main idea and key details from an audio or video related to "${theme}", and record at least three accurate notes using ${gram1}.`,
+                `By the end of the lesson, students will be able to follow spoken instructions or a presentation about "${theme}" and complete a listening task by applying ${grammar} correctly.`,
+                `By the end of the lesson, students will be able to listen to a short audio or dialogue related to "${theme}" and answer comprehension questions using ${gram1}, selecting one key idea to share with a partner.`
             ]);
 
-            // READING
             result.reading = rnd([
                 `By the end of the lesson, students will be able to read a short text related to "${theme}" and write 3–4 sentence responses using ${grammar} to answer comprehension questions.`,
-                `By the end of the lesson, students will be able to identify the main idea and key details from an informational text about "${theme}" and share their thoughts using target vocabulary.`
+                `By the end of the lesson, students will be able to identify the main idea and key details from an informational text about "${theme}" and share their thoughts using target vocabulary.`,
+                `By the end of the lesson, students will be able to read and take notes on a text about "${theme}", identifying at least two main points and using ${gram1} to summarize them in writing.`,
+                `By the end of the lesson, students will be able to analyze a short reading about "${theme}", answer guided questions, and highlight examples of ${gram1} used in the text.`,
+                `By the end of the lesson, students will be able to read a text connected to "${theme}" and write a 3–5 sentence reflection using ${grammar}, choosing one idea to contribute to their ${project}.`
             ]);
 
-            // SPEAKING
             result.speaking = rnd([
                 `By the end of the lesson, students will be able to take part in a short group discussion about "${theme}" by giving at least two examples using ${grammar} and responding to a classmate's idea.`,
-                `By the end of the lesson, students will be able to explain rules or ideas related to "${theme}" using ${grammar} in a structured pair or group activity.`
+                `By the end of the lesson, students will be able to explain rules or ideas related to "${theme}" using ${gram1} in a structured pair or group activity.`,
+                `By the end of the lesson, students will be able to present a brief analysis of "${theme}" to a partner or small group, using ${grammar} and at least three vocabulary words from the unit.`,
+                `By the end of the lesson, students will be able to engage in a role-play or discussion activity about "${theme}", demonstrating use of ${gram1} and ${prag}.`,
+                `By the end of the lesson, students will be able to share their opinion about "${theme}" in a structured speaking task, using ${grammar} to support their points and respond to at least one classmate.`
             ]);
 
-            // WRITING
             result.writing = rnd([
                 `By the end of the lesson, students will be able to write 3–4 simple sentences about "${theme}" using ${grammar}, and improve one sentence after receiving peer feedback.`,
-                `By the end of the lesson, students will be able to draft a short written response about "${theme}" using ${grammar}, selecting one sentence to include in their ${project}.`
+                `By the end of the lesson, students will be able to draft a short written response about "${theme}" using ${gram1}, selecting one sentence to include in their ${project}.`,
+                `By the end of the lesson, students will be able to compose a short paragraph about "${theme}" using ${grammar}, incorporating at least two vocabulary words and revising based on a classmate's suggestion.`,
+                `By the end of the lesson, students will be able to write a 4–6 sentence text related to "${theme}" using ${gram1}, and choose one sentence to contribute to their ${project}.`,
+                `By the end of the lesson, students will be able to produce a written response about "${theme}" using ${grammar}, applying ${gram2} correctly in at least two sentences.`
             ]);
 
-            // MEDIATION
             result.mediation = rnd([
                 `By the end of the lesson, students will be able to write one simple interpretation of a text or visual related to "${theme}" using a matching written prompt and a visual aid.`,
-                `By the end of the lesson, students will be able to relay key information from a "${theme}" text to a partner using their own words and a supporting visual or written prompt.`
+                `By the end of the lesson, students will be able to relay key information from a "${theme}" text to a partner using their own words and a supporting visual or written prompt.`,
+                `By the end of the lesson, students will be able to paraphrase a short text or audio about "${theme}" in simple language, using ${gram1} to support their explanation.`,
+                `By the end of the lesson, students will be able to facilitate a brief peer discussion about "${theme}" by summarizing a key idea and inviting at least one classmate to respond.`,
+                `By the end of the lesson, students will be able to interpret and explain a visual or written source related to "${theme}", using ${gram1} and relevant vocabulary to convey the main message.`
             ]);
 
-            // Only include selected skills — others stay blank
             if (selectedSkills.length > 0) {
                 ['listening','reading','speaking','writing','mediation'].forEach(sk => {
                     if (!selectedSkills.includes(sk)) result[sk] = '';
@@ -1544,68 +1559,130 @@
         }
 
         function generateSmartAssessment(ctx) {
-            const comp   = currentScenario.communicative_competences;
-            const grammar = comp.linguistic.grammatical_features.slice(0,2).join(', ');
-            const theme  = ctx.theme || 'the theme';
+            const comp    = currentScenario.communicative_competences;
+            const g       = comp.linguistic.grammatical_features;
+            const grammar = g.slice(0,2).join(', ');
+            const gram1   = g[0] || 'target structures';
+            const theme   = ctx.theme || 'the theme';
+            const school  = ctx.school || 'the school';
+            const regional = ctx.regional || '';
             const isRural = ['bocas','darien','veraguas','chiriqui','herrera','los santos','cocle','colon','guna','comarca','ngobe','embera']
-                            .some(r => ctx.regional.toLowerCase().includes(r));
+                            .some(r => regional.toLowerCase().includes(r));
 
-            // MATERIALS — simple list like MEDUCA example
-            const baseMaterials = ['Pictures', 'Whiteboard', 'Worksheets', 'Dictionaries', 'Reading texts'];
-            const digitalMaterials = ['Audios/Videos', 'Digital presentations', 'Online resources'];
-            const ruralExtra = ['Blackboard', 'Handmade flashcards', 'Reusable activity sheets', 'Pre-recorded audio'];
-            const urbanExtra = ['Audios/Videos', 'Projector/Screen', 'Vocabulary flashcards', 'Graphic organizers'];
+            const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-            const matList = isRural
-                ? [...baseMaterials, ...ruralExtra]
-                : [...baseMaterials, ...urbanExtra];
+            // Base materials always present
+            const base = ['Pictures', 'Whiteboard', 'Worksheets', 'Dictionaries', 'Reading texts'];
 
-            const materials = matList.join('\n• ');
+            // Pool of optional materials — pick 3 randomly each time
+            const optionalUrban = ['Audios/Videos', 'Projector/Screen', 'Vocabulary flashcards',
+                'Graphic organizers', 'Digital presentations', 'Sentence strips', 'Role-play cards',
+                'Online resources', 'Audio recordings', 'Video clips'];
+            const optionalRural = ['Blackboard', 'Handmade flashcards', 'Reusable activity sheets',
+                'Pre-recorded audio', 'Locally-made visual aids', 'Community photographs',
+                'Sentence strips', 'Role-play cards', 'Printed vocabulary cards'];
 
-            // DIFFERENTIATION — short and practical like MEDUCA example
-            const differentiation =
-                `Provide sentence starters and word banks related to "${theme}".
-` +
-                `Use visuals, prompts, and sentence templates to support comprehension.
-` +
-                `Implement peer feedback and peer support strategies.
-` +
-                `For students needing extra support: simplify texts, allow extended time, and use ${grammar} sentence frames.
-` +
-                `For advanced learners: assign extended writing or speaking tasks using more complex structures.`;
+            const pool = isRural ? optionalRural : optionalUrban;
+            // Shuffle and pick 3
+            const shuffled = pool.sort(() => Math.random() - 0.5).slice(0, 3);
+            const matList = [...base, ...shuffled];
+            const materials = '• ' + matList.join('\n• ');
 
-            return JSON.stringify({ materials: '• ' + materials, differentiation });
+            // DLN strategies — pick different combo each time
+            const supportStrategies = rnd([
+                `Provide sentence starters and word banks related to "${theme}".`,
+                `Supply graphic organizers and visual prompts connected to "${theme}".`,
+                `Offer sentence frames and vocabulary cards related to "${theme}".`
+            ]);
+            const generalStrategies = rnd([
+                `Use visuals, prompts, and sentence templates to support comprehension.`,
+                `Implement think-pair-share and visual cues to aid understanding.`,
+                `Use realia, pictures, and guided questions to scaffold learning.`
+            ]);
+            const peerStrategies = rnd([
+                `Implement peer feedback and peer support strategies.`,
+                `Encourage collaborative learning and peer tutoring activities.`,
+                `Use partner work and small group support to reinforce learning.`
+            ]);
+            const tierSupport = rnd([
+                `For students needing extra support: simplify texts, allow extended time, and use ${gram1} sentence frames.`,
+                `For struggling learners: provide modified tasks, additional wait time, and ${gram1} scaffolded examples.`,
+                `For students with diverse needs: offer chunked instructions, visual aids, and ${gram1} sentence starters.`
+            ]);
+            const advanced = rnd([
+                `For advanced learners: assign extended writing or speaking tasks using more complex structures.`,
+                `For early finishers: provide enrichment tasks that challenge deeper use of ${grammar}.`,
+                `For advanced students: encourage independent research or creative production related to "${theme}".`
+            ]);
+
+            const differentiation = `${supportStrategies}\n${generalStrategies}\n${peerStrategies}\n${tierSupport}\n${advanced}`;
+
+            return JSON.stringify({ materials, differentiation });
         }
 
         function generateSmartSequence(ctx, numLessons) {
             const comp    = currentScenario.communicative_competences;
-            const grammar = comp.linguistic.grammatical_features.slice(0,2).join(' and ');
+            const g       = comp.linguistic.grammatical_features;
+            const grammar = g.slice(0,2).join(' and ');
+            const gram1   = g[0] || 'target structures';
+            const gram2   = g[1] || gram1;
             const theme   = ctx.theme || 'the theme';
             const scenario = ctx.scenario || 'the scenario';
             const project = currentScenario.assessment_ideas['21st_century_projects']?.[0]?.project_title || 'class project';
-            const skills  = selectedSkills.length > 0 ? selectedSkills : ['listening','reading','speaking','writing','mediation'];
             const prag    = comp.pragmatic.skills[0] || 'communicative task';
+            const prag2   = comp.pragmatic.skills[1] || prag;
+            const vocab   = comp.linguistic.vocabulary || 'topic vocabulary';
 
-            // Build progressive lessons connected to the 21st century project — MEDUCA style
-            const allTemplates = [
-                `Students watch or listen to materials to identify key information related to "${theme}", write at least three ideas using ${grammar}, and select one to include in their ${project}.`,
+            const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+            // Large pool — pick randomly for each lesson position
+            const intro = [
+                `Students watch or listen to materials to identify key information related to "${theme}", write at least three ideas using ${gram1}, and select one to include in their ${project}.`,
+                `Students view pictures or a short video about "${theme}", identify key vocabulary, and use ${gram1} to write at least two observations to share with the class.`,
+                `Students listen to an audio or teacher presentation about "${theme}", respond to guided questions using ${gram1}, and record at least three key ideas in their notebooks.`,
+                `Students engage with visual or audio input related to "${theme}", identify main ideas, and complete a listening or viewing task using ${grammar}.`
+            ];
+            const develop = [
                 `Students read short, scaffolded texts about "${theme}", answer comprehension questions, and write a 3–5 sentence reflection using ${grammar}, choosing one sentence to add to their ${project}.`,
+                `Students analyze a short reading about "${theme}", highlight examples of ${gram1}, and answer guided comprehension questions before sharing their findings with a partner.`,
+                `Students read an informational text connected to "${theme}", take notes on key points, and write a summary using ${grammar} to present to a small group.`,
+                `Students explore a text or resource about "${theme}", identify how ${gram1} is used, and write 3–4 sentences connecting the content to their own experience.`
+            ];
+            const practice = [
                 `Through guided pair work, students explain ideas about "${theme}" using ${grammar}, practice ${prag}, and support their responses with visuals or examples.`,
-                `Students write 3–4 sentences about "${theme}" using ${grammar}, improve one sentence after a classmate's suggestion, and choose one sentence to include in their ${project}.`,
-                `Students present and share their ${project} with the class, using ${grammar} and target vocabulary from the "${theme}" unit. Peers provide feedback using a simple checklist.`
+                `In small groups, students discuss "${theme}" and take turns explaining key ideas using ${gram1}, responding to each other with ${prag2}.`,
+                `Students role-play a scenario connected to "${theme}", using ${grammar} and target vocabulary to communicate their ideas clearly to a partner.`,
+                `Students complete a collaborative speaking or writing task about "${theme}", applying ${gram1} and providing feedback to classmates using a simple checklist.`
+            ];
+            const production = [
+                `Students write 3–4 sentences about "${theme}" using ${grammar}, improve one sentence after a classmate's suggestion, and choose one to include in their ${project}.`,
+                `Students draft a short written or spoken response about "${theme}" using ${gram1}, revise based on peer feedback, and select their best sentence for the ${project}.`,
+                `Students produce a written or visual product related to "${theme}" using ${grammar}, share it with a partner for feedback, and make at least one improvement.`,
+                `Students create a short text or oral presentation about "${theme}" using ${gram2}, incorporate peer suggestions, and submit their best work toward the ${project}.`
+            ];
+            const closing = [
+                `Students present and share their ${project} with the class, using ${grammar} and target vocabulary from the "${theme}" unit. Peers provide feedback using a simple checklist.`,
+                `Students complete a final performance task connected to "${theme}", demonstrating use of ${grammar} and sharing their ${project} with classmates for peer evaluation.`,
+                `Students showcase their ${project}, explain their choices using ${gram1}, and respond to at least two questions from classmates about their work.`,
+                `Students reflect on what they learned about "${theme}", share one key idea using ${grammar}, and present their contribution to the ${project} to the group.`
+            ];
+            const extra = [
+                `Students review vocabulary from "${theme}" through a sorting or matching activity, then practice ${gram1} in a short guided written task connected to "${scenario}".`,
+                `Students collaborate in small groups to discuss "${theme}", assign roles, and produce a short written or oral output using ${grammar} and topic vocabulary.`,
+                `Students complete a formative task demonstrating understanding of "${theme}" by producing content using ${gram1}, then receive teacher and peer feedback.`,
+                `Students create a mini-presentation or visual summary of "${theme}" using ${grammar}, share it with a partner, and identify one area to improve.`,
+                `Students apply ${gram1} and ${gram2} in an integrated task connected to "${theme}", combining skills practiced throughout the unit to prepare for their ${project}.`
             ];
 
-            // Extra templates for longer sequences
-            const extraTemplates = [
-                `Students review vocabulary from "${theme}" through a matching activity and practice using ${grammar} in a short guided dialogue or written task connected to "${scenario}".`,
-                `Students collaborate in small groups to discuss "${theme}", assign roles, and produce a short written or oral output using ${grammar} structures and topic vocabulary.`,
-                `Students complete a formative task where they demonstrate understanding of "${theme}" by producing written or spoken content using ${grammar}, receiving teacher and peer feedback.`
-            ];
-
-            const combined = [...allTemplates, ...extraTemplates];
+            // Build sequence: intro, develop, practice, production, closing, then extras
+            const pools = [intro, develop, practice, production, closing, ...extra.map(e => [e])];
             const lessons = [];
             for (let i = 0; i < numLessons; i++) {
-                lessons.push(combined[i % combined.length]);
+                if (i < 5) {
+                    lessons.push(rnd(pools[i]));
+                } else {
+                    lessons.push(rnd(extra));
+                }
             }
             return JSON.stringify(lessons);
         }
